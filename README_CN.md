@@ -576,10 +576,70 @@ Minecraft服务器接受来自TCP客户端的连接，并使用数据包与它�
 | `0x08`<br/>`custom_click_action` | 配置 Configuration | 服务器 Server | ID | 标识符 Identifier | 点击操作的标识符。 |
 | `0x08`<br/>`custom_click_action` | 配置 Configuration | 服务器 Server | 有效载荷 Payload | NBT | 要与点击操作一起发送的数据。可以是TAG_END（0）。 |
 
+## 游戏 Play
+
+### 客户端绑定 Clientbound
+
+#### 捆绑分隔符 Bundle Delimiter
+
+数据包捆绑的分隔符。收到后，客户端应该存储它收到的每个后续数据包，并等待收到另一个分隔符。一旦发生这种情况，客户端就可以保证在同一刻度 tick 上处理捆绑中的每个数据包，并且客户端应该停止存储数据包。
+
+从1.20.6开始，原版服务器仅使用它来确保生成实体 Spawn Entity 和用于配置实体的关联数据包在同一刻度上发生。每个实体都有一个单独的捆绑。
+
+原版客户端不允许在同一捆绑中超过4096个数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x00`<br/>`bundle_delimiter` | 游戏 Play | 客户端 Client | | | 无字段 no fields |
+
+#### 生成实体 Spawn Entity
+
+由服务器发送以在客户端上创建实体，通常是在实体在玩家视野范围内生成或进入时。
+
+本地玩家实体由客户端自动创建，不得使用此数据包显式创建。在原版客户端上这样做会产生奇怪的后果。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 一个唯一的整数ID，主要用于协议中识别实体。如果客户端上已存在具有相同ID的实体，则会自动删除它并替换为新实体。在原版服务器上，实体ID在所有维度中全局唯一，并且在服务器运行时永不重用，但不会在服务器重启之间保留。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 实体UUID Entity UUID | UUID | 一个唯一的标识符，主要用于持久性和唯一性更重要的地方。可以在原版客户端上创建具有相同UUID的多个实体，但会记录警告，并且依赖于UUID的功能可能会忽略实体或以其他方式出现异常。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 类型 Type | VarInt | `minecraft:entity_type` 注册表中的ID（请参阅实体元数据#实体 Entity metadata#Entities 中的"type"字段）。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | X | 双精度浮点型 Double | |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | Y | 双精度浮点型 Double | |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | Z | 双精度浮点型 Double | |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 俯仰角 Pitch | 角度 Angle | |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 偏航角 Yaw | 角度 Angle | |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 头部偏航角 Head Yaw | 角度 Angle | 仅由生物实体 living entities 使用，其中实体的头部可能与一般身体旋转不同。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 数据 Data | VarInt | 含义取决于类型 Type 字段的值，有关详细信息，请参阅对象数据 Object Data。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 速度X Velocity X | 短整型 Short | 与设置实体速度 Set Entity Velocity 相同的单位。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 速度Y Velocity Y | 短整型 Short | 与设置实体速度 Set Entity Velocity 相同的单位。 |
+| `0x01`<br/>`add_entity` | 游戏 Play | 客户端 Client | 速度Z Velocity Z | 短整型 Short | 与设置实体速度 Set Entity Velocity 相同的单位。 |
+
+**警告：** 当此数据包用于生成玩家实体时，应考虑以下几点。
+
+在在线模式 online mode 下，UUID必须有效并具有有效的皮肤数据。在离线模式下，原版服务器使用UUID v3，并通过使用字符串 `OfflinePlayer:<player name>`（以UTF-8编码且区分大小写）选择玩家的UUID，然后使用 `UUID.nameUUIDFromBytes` 处理它。
+
+对于NPC应使用UUID v2。注意：
+
+> <+Grum> i will never confirm this as a feature you know that :)
+
+在示例UUID `xxxxxxxx-xxxx-Yxxx-xxxx-xxxxxxxxxxxx` 中，UUID版本由 `Y` 指定。因此，对于UUID v3，`Y` 将始终为 `3`，对于UUID v2，`Y` 将始终为 `2`。
+
+#### 实体动画 Entity Animation
+
+在实体应该更改动画时发送。
+
 ---
 
-**翻译进度：第1-5部分（介绍、定义、数据包格式、握手、状态、登录、配置）- 已完成**
+**翻译进度：第1-5部分完成，第6部分（游戏 Play）开始**
 
-**待翻译章节：**
-- 游戏（Play）- 最大章节，约8500行
+**已翻译：**
+- 介绍、定义和数据包格式
+- 握手 Handshaking
+- 状态 Status
+- 登录 Login
+- 配置 Configuration
+- 游戏 Play（开始，包含捆绑分隔符、生成实体、实体动画等数据包）
+
+**待继续：**
+- 游戏（Play）剩余部分 - 约8400行
 - 导航（Navigation）
