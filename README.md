@@ -12,131 +12,131 @@
 
 Minecraft服务器接受来自TCP客户端的连接，并使用''数据包''与它们通信。数据包是通过TCP连接发送的字节序列。数据包的含义既取决于其数据包ID，也取决于连接的当前状态。每个连接的初始状态是[[#Handshaking|握手]]，状态通过[[#Handshake|握手]]和[[#Login Success|登录成功]]数据包进行切换。
 
-=== Data types ===
+=== 数据类型 ===
 
 {{:Java Edition protocol/Data types}} <!-- Transcluded contents of Data types article in here — go to that page if you want to edit it -->
 
-=== Other definitions ===
+=== 其他定义 ===
 
 {| class="wikitable"
  |-
- ! Term
- ! Definition
+ ! 术语
+ ! 定义
  |-
- | Player
- | When used in the singular, Player always refers to the client connected to the server.
+ | Player（玩家）
+ | 当单数使用时，Player始终指连接到服务器的客户端。
  |-
- | Entity
- | Entity refers to any item, player, mob, minecart or boat etc. See [[Entity|the Minecraft Wiki article]] for a full list.
+ | Entity（实体）
+ | Entity指任何物品、玩家、生物、矿车或船等。完整列表请参见[[Entity|Minecraft Wiki文章]]。
  |-
  | EID
- | An EID — or Entity ID — is a 4-byte sequence used to identify a specific entity. An entity's EID is unique on the entire server.
+ | EID（或实体ID）是用于标识特定实体的4字节序列。实体的EID在整个服务器上是唯一的。
  |-
  | XYZ
- | In this document, the axis names are the same as those shown in the debug screen (F3). Y points upwards, X points east, and Z points south.
+ | 在本文档中，轴名称与调试屏幕（F3）中显示的相同。Y指向上方，X指向东方，Z指向南方。
  |-
- | Meter
- | The meter is Minecraft's base unit of length, equal to the length of a vertex of a solid block. The term “block” may be used to mean “meter” or “cubic meter”.
+  | Meter（米）
+  | 米是Minecraft的基本长度单位，等于实心方块顶点的长度。术语"方块"可用于表示"米"或"立方米"。
  |-
- | Registry
- | A table describing static, gameplay-related objects of some kind, such as the types of entities, block states or biomes. The entries of a registry are typically associated with textual or numeric identifiers, or both.
+  | Registry（注册表）
+  | 描述某种静态的、与游戏玩法相关的对象的表，例如实体类型、方块状态或生物群系。注册表的条目通常与文本或数字标识符关联，或两者兼有。
 
-Minecraft has a unified registry system used to implement most of the registries, including blocks, items, entities, biomes and dimensions. These "ordinary" registries associate entries with both namespaced textual identifiers (see [[#Identifier]]), and signed (positive) 32-bit numeric identifiers. There is also a registry of registries listing all of the registries in the registry system. Some other registries, most notably the [[Minecraft Wiki:Projects/wiki.vg merge/Chunk Format#Block state registry|block state registry]], are however implemented in a more ad-hoc fashion.
+Minecraft有一个统一的注册表系统，用于实现大多数注册表，包括方块、物品、实体、生物群系和维度。这些"普通"注册表将条目与命名空间文本标识符（参见[[#Identifier]]）和有符号（正）32位数字标识符关联。还有一个注册表的注册表，列出了注册表系统中的所有注册表。然而，其他一些注册表，最显著的是[[Minecraft Wiki:Projects/wiki.vg merge/Chunk Format#Block state registry|方块状态注册表]]，是以更临时的方式实现的。
 
-Some registries, such as biomes and dimensions, can be customized at runtime by the server (see [[Minecraft Wiki:Projects/wiki.vg merge/Registry Data|Registry Data]]), while others, such as blocks, items and entities, are hardcoded. The contents of the hardcoded registries can be extracted via the built-in [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|Data Generators]] system.
+一些注册表，如生物群系和维度，可以在运行时由服务器自定义（参见[[Minecraft Wiki:Projects/wiki.vg merge/Registry Data|注册表数据]]），而其他注册表，如方块、物品和实体，则是硬编码的。硬编码注册表的内容可以通过内置的[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|数据生成器]]系统提取。
  |-
- | Block state
- | Each block in Minecraft has 0 or more properties, which in turn may have any number of possible values. These represent, for example, the orientations of blocks, poweredness states of redstone components, and so on. Each of the possible permutations of property values for a block is a distinct block state. The block state registry assigns a numeric identifier to every block state of every block.
+  | Block state（方块状态）
+  | Minecraft中的每个方块都有0个或多个属性，这些属性反过来可能有任意数量的可能值。这些表示例如方块的方向、红石组件的通电状态等。方块的属性值的每种可能排列都是不同的方块状态。方块状态注册表为每个方块的每个方块状态分配一个数字标识符。
 
-A current list of properties and state ID ranges is found on [https://pokechu22.github.io/Burger/1.21.html burger].
+当前属性和状态ID范围的列表可以在[https://pokechu22.github.io/Burger/1.21.html burger]上找到。
 
-Alternatively, the vanilla server now includes an option to export the current block state ID mapping by running <code>java -DbundlerMainClass=net.minecraft.data.Main -jar minecraft_server.jar --reports</code>.  See [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|Data Generators]] for more information.
+或者，原版服务器现在包含一个选项，可以通过运行<code>java -DbundlerMainClass=net.minecraft.data.Main -jar minecraft_server.jar --reports</code>导出当前方块状态ID映射。有关更多信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|数据生成器]]。
  |-
- | Vanilla
- | The official implementation of Minecraft as developed and released by Mojang.
+  | Vanilla（原版）
+  | Mojang开发和发布的Minecraft官方实现。
  |-
- | Sequence
- | The action number counter for local block changes, incremented by one when clicking a block with a hand, right-clicking an item, or starting or finishing digging a block. Counter handles latency to avoid applying outdated block changes to the local world. It is also used to revert ghost blocks created when placing blocks, using buckets, or breaking blocks.
+  | Sequence（序列）
+  | 本地方块更改的动作编号计数器，当用手点击方块、右键点击物品或开始或完成挖掘方块时增加一。计数器处理延迟以避免将过时的方块更改应用于本地世界。它还用于还原放置方块、使用桶或破坏方块时创建的幽灵方块。
  |}
 
-== Packet format ==
+== 数据包格式 ==
 
-Packets cannot be larger than 2<sup>21</sup> &minus; 1 or 2097151 bytes (the maximum that can be sent in a 3-byte {{Type|VarInt}}). Moreover, the length field must not be longer than 3 bytes, even if the encoded value is within the limit. Unnecessarily long encodings at 3 bytes or below are still allowed.  For compressed packets, this applies to the Packet Length field, i.e. the compressed length.
+数据包不能大于2<sup>21</sup> &minus; 1或2097151字节（可以在3字节{{Type|VarInt}}中发送的最大值）。此外，即使编码值在限制内，长度字段也不得超过3字节。仍然允许3字节或以下的不必要的长编码。对于压缩数据包，这适用于数据包长度字段，即压缩长度。
 
-=== Without compression ===
+=== 无压缩 ===
 
 {| class="wikitable"
- ! Field Name
- ! Field Type
- ! Notes
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
- | Length
+  | Length（长度）
  | {{Type|VarInt}}
- | Length of Packet ID + Data
+  | 数据包ID + 数据的长度
  |-
- | Packet ID
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | Corresponds to <code>protocol_id</code> from [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators#Packets report|the server's packet report]]
+  | 对应于[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators#Packets report|服务器数据包报告]]中的<code>protocol_id</code>
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | Depends on the connection state and packet ID, see the sections below
+  | 取决于连接状态和数据包ID，请参见下面的章节
  |}
 
-=== With compression ===
+=== 有压缩 ===
 
-Once a [[#Set Compression|Set Compression]] packet (with a non-negative threshold) is sent, [[wikipedia:Zlib|zlib]] compression is enabled for all following packets. The format of a packet changes slightly to include the size of the uncompressed packet.
+一旦发送[[#Set Compression|设置压缩]]数据包（具有非负阈值），[[wikipedia:Zlib|zlib]]压缩将对所有后续数据包启用。数据包的格式会略有变化以包含未压缩数据包的大小。
 
 {| class=wikitable
- ! Present?
- ! Compressed?
- ! Field Name
- ! Field Type
- ! Notes
+  ! 存在？
+  ! 压缩？
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
- | always
- | No
- | Packet Length
+  | 总是
+  | 否
+  | Packet Length（数据包长度）
  | {{Type|VarInt}}
- | Length of (Data Length) + length of compressed (Packet ID + Data)
+  | （数据长度）的长度 + 压缩的（数据包ID + 数据）的长度
  |-
- | rowspan="3"| if size >= threshold
- | No
- | Data Length
+  | rowspan="3"| 如果 size >= threshold
+  | 否
+  | Data Length（数据长度）
  | {{Type|VarInt}}
- | Length of uncompressed (Packet ID + Data)
+  | 未压缩的（数据包ID + 数据）的长度
  |-
- | rowspan="2"| Yes
- | Packet ID
+  | rowspan="2"| 是
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | zlib compressed packet ID (see the sections below)
+  | zlib压缩的数据包ID（请参见下面的章节）
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | zlib compressed packet data (see the sections below)
+  | zlib压缩的数据包数据（请参见下面的章节）
  |-
- | rowspan="3"| if size < threshold
- | rowspan="3"| No
- | Data Length
+  | rowspan="3"| 如果 size < threshold
+  | rowspan="3"| 否
+  | Data Length（数据长度）
  | {{Type|VarInt}}
- | 0 to indicate uncompressed
+  | 0表示未压缩
  |-
- | Packet ID
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | packet ID (see the sections below)
+  | 数据包ID（请参见下面的章节）
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | packet data (see the sections below)
+  | 数据包数据（请参见下面的章节）
  |}
 
-For serverbound packets, the uncompressed length of (Packet ID + Data) must not be greater than 2<sup>23</sup> or 8388608 bytes. Note that a length equal to 2<sup>23</sup> is permitted, which differs from the compressed length limit. The vanilla client, on the other hand, has no limit for the uncompressed length of incoming compressed packets.
+对于服务器绑定数据包，（数据包ID + 数据）的未压缩长度不得大于2<sup>23</sup>或8388608字节。请注意，允许等于2<sup>23</sup>的长度，这与压缩长度限制不同。另一方面，原版客户端对传入压缩数据包的未压缩长度没有限制。
 
-If the size of the buffer containing the packet data and ID (as a {{Type|VarInt}}) is smaller than the threshold specified in the packet [[#Set Compression|Set Compression]]. It will be sent as uncompressed. This is done by setting the data length to 0. (Comparable to sending a non-compressed format with an extra 0 between the length and packet data).
+如果包含数据包数据和ID（作为{{Type|VarInt}}）的缓冲区的大小小于[[#Set Compression|设置压缩]]数据包中指定的阈值，它将以未压缩方式发送。这是通过将数据长度设置为0来完成的。（相当于在长度和数据包数据之间发送带有额外0的非压缩格式）。
 
-If it's larger than or equal to the threshold, then it follows the regular compressed protocol format.
+如果它大于或等于阈值，则遵循常规压缩协议格式。
 
-The vanilla server (but not client) rejects compressed packets smaller than the threshold. Uncompressed packets exceeding the threshold, however, are accepted.
+原版服务器（但不是客户端）拒绝小于阈值的压缩数据包。但是，超过阈值的未压缩数据包被接受。
 
 Compression can be disabled by sending the packet [[#Set Compression|Set Compression]] with a negative Threshold, or not sending the Set Compression packet at all.
 
