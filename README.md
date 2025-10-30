@@ -944,239 +944,239 @@ The vanilla server does not continue with Configuration until it receives a resp
  | Namespace
   | ID（标识符）
  | {{Type|String}} (32767)
- |
+  | Version（版本）
  |-
  | ID
  | {{Type|String}} (32767)
  |
- |-
+==== 自定义报告详情（配置） ====
  | Version
- | {{Type|String}} (32767)
+包含在连接到服务器期间生成的任何崩溃或断开连接报告中包含的键值文本条目列表。
  |
  |}
-
-==== Custom Report Details (configuration) ====
-
-Contains a list of key-value text entries that are included in any crash or disconnection report generated during connection to the server.
-
-{| class="wikitable"
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Packet ID
  ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Details（详情）
+  | Title（标题）
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x0F</code><br/><br/>''resource:''<br/><code>custom_report_details</code>
  | rowspan="2"| Configuration
  | rowspan="2"| Client
- | rowspan="2"| Details
+  | Description（描述）
  | Title
  | rowspan="2"| {{Type|Prefixed Array}} (32)
  | {{Type|String}} (128)
  |
- |-
+==== 服务器链接（配置） ====
  | Description
- | {{Type|String}} (4096)
+此数据包包含原版客户端将在暂停菜单中显示的链接列表。链接标签可以是内置的或自定义的（即任何文本）。
  |
 |}
-
-==== Server Links (configuration) ====
-
-This packet contains a list of links that the vanilla client will display in the menu available from the pause menu. Link labels can be built-in or custom (i.e., any text).
-
-{| class="wikitable"
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Packet ID
  ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Links（链接）
+  | Label（标签）
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x10</code><br/><br/>''resource:''<br/><code>server_links</code>
- | rowspan="2"| Configuration
+  | 内置标签使用枚举（见下文），自定义标签使用文本组件。
  | rowspan="2"| Client
- | rowspan="2"| Links
+  | URL（网址）
  | Label
- | rowspan="2"| {{Type|Prefixed Array}}
+  | 有效的URL。
  | {{Type|VarInt}} {{Type|Enum}} {{Type|or}} {{Type|Text Component}}
  | Enums are used for built-in labels (see below), and text components for custom labels.
  |-
  | URL
- | {{Type|String}}
- | Valid URL.
-|}
+  ! ID（标识符）
+  ! 名称
+  ! 备注
 
 
-{| class="wikitable"
- ! ID
+  | Bug Report（错误报告）
+  | 显示在连接错误屏幕上；作为注释包含在断开连接报告中。
  ! Name
  ! Notes
- |-
+  | Community Guidelines（社区准则）
  | 0
  | Bug Report
- | Displayed on connection error screen; included as a comment in the disconnection report.
+  | Support（支持）
  |-
  | 1
- | Community Guidelines
+  | Status（状态）
  | 
  |-
- | 2
+  | Feedback（反馈）
  | Support
  | 
- |-
+  | Community（社区）
  | 3
  | Status
- | 
+  | Website（网站）
  |-
  | 4
- | Feedback
+  | Forums（论坛）
  | 
  |-
- | 5
+  | News（新闻）
  | Community
  | 
- |-
+  | Announcements（公告）
  | 6
  | Website
  | 
- |-
+==== 清除对话框（配置） ====
  | 7
- | Forums
+如果我们当前处于对话框屏幕中，则删除当前屏幕并切换回上一个屏幕。
  | 
  |-
- | 8
- | News
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | 
  |-
- | 9
- | Announcements
- | 
- |-
- |}
-
-==== Clear Dialog (configuration) ====
+  | 配置
+  | 客户端
+  | colspan="3"| 无字段
 
 If we're currently in a dialog screen, then this removes the current screen and switches back to the previous one.
-
+==== 显示对话框（配置） ====
 {| class="wikitable"
- ! Packet ID
+向客户端显示自定义对话框屏幕。
  ! State
  ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
- | ''protocol:''<br/><code>0x11</code><br/><br/>''resource:''<br/><code>clear_dialog</code>
- | Configuration
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | Client
  | colspan="3"| ''no fields''
- |}
+  | 配置
+  | 客户端
+  | Dialog（对话框）
 
-==== Show Dialog (configuration) ====
-
-Show a custom dialog screen to the client.
-
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
- | ''protocol:''<br/><code>0x12</code><br/><br/>''resource:''<br/><code>show_dialog</code>
- | Configuration
- | Client
- | Dialog
- | {{Type|NBT}}
- | Inline definition as described at [[Java_Edition_protocol/Registry_data#Dialog|Registry_data#Dialog]].
- |}
-
-=== Serverbound ===
-
-==== Client Information (configuration) ====
-
-Sent when the player connects, or when settings are changed.
+  | 如[[Java_Edition_protocol/Registry_data#Dialog|Registry_data#Dialog]]中所述的内联定义。
 
 {| class="wikitable"
- ! Packet ID
+=== 服务器绑定 ===
  ! State
- ! Bound To
+==== 客户端信息（配置） ====
  ! Field Name
- ! Field Type
+当玩家连接或更改设置时发送。
  ! Notes
  |-
- | rowspan="9"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>client_information</code>
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
+ |}
+
+  | rowspan="9"| 配置
+  | rowspan="9"| 服务器
+  | Locale（区域设置）
+
+  | 例如<code>en_GB</code>。
+
+  | View Distance（视距）
+ ! Packet ID
+  | 客户端渲染距离，以区块为单位。
+ ! Bound To
+  | Chat Mode（聊天模式）
+ ! Field Type
+  | 0：启用，1：仅命令，2：隐藏。有关更多信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Chat#Client chat mode|聊天#客户端聊天模式]]。
+ |-
+  | Chat Colors（聊天颜色）
  | rowspan="9"| Configuration
- | rowspan="9"| Server
+  | "颜色"多人游戏设置。原版服务器存储此值但不对其执行任何操作（参见{{bug|MC-64867}}）。当它为false时，一些第三方服务器会禁用聊天和系统消息中的所有着色。
  | Locale
- | {{Type|String}} (16)
+  | Displayed Skin Parts（显示的皮肤部分）
  | e.g. <code>en_GB</code>.
- |-
+  | 位掩码，见下文。
  | View Distance
- | {{Type|Byte}}
+  | Main Hand（主手）
  | Client-side render distance, in chunks.
- |-
+  | 0：左手，1：右手。
  | Chat Mode
- | {{Type|VarInt}} {{Type|Enum}}
+  | Enable text filtering（启用文本过滤）
  | 0: enabled, 1: commands only, 2: hidden.  See [[Minecraft Wiki:Projects/wiki.vg merge/Chat#Client chat mode|Chat#Client chat mode]] for more information.
- |-
+  | 启用告示牌和成书标题上的文本过滤。原版客户端根据[[Minecraft Wiki:Projects/wiki.vg merge/Mojang API#Player Attributes|<code>/player/attributes</code> Mojang API端点]]指示的<code>profanityFilterPreferences.profanityFilterOn</code>账户属性设置此项。在离线模式下，它始终为false。
  | Chat Colors
- | {{Type|Boolean}}
+  | Allow server listings（允许服务器列表）
  | “Colors” multiplayer setting. The vanilla server stores this value but does nothing with it (see {{bug|MC-64867}}). Some third-party servers disable all coloring in chat and system messages when it is false.
- |-
+  | 服务器通常列出在线玩家；此选项应让您不出现在该列表中。
  | Displayed Skin Parts
- | {{Type|Unsigned Byte}}
+  | Particle Status（粒子状态）
  | Bit mask, see below.
- |-
+  | 0：全部，1：减少，2：最少
  | Main Hand
  | {{Type|VarInt}} {{Type|Enum}}
- | 0: Left, 1: Right.
+显示的皮肤部分标志：
  |-
- | Enable text filtering
- | {{Type|Boolean}}
- | Enables filtering of text on signs and written book titles. The vanilla client sets this according to the <code>profanityFilterPreferences.profanityFilterOn</code> account attribute indicated by the [[Minecraft Wiki:Projects/wiki.vg merge/Mojang API#Player Attributes|<code>/player/attributes</code> Mojang API endpoint]]. In offline mode, it is always false.
+* 位0（0x01）：披风启用
+* 位1（0x02）：外套启用
+* 位2（0x04）：左袖启用
+* 位3（0x08）：右袖启用
+* 位4（0x10）：左裤腿启用
+* 位5（0x20）：右裤腿启用
+* 位6（0x40）：帽子启用
  |-
- | Allow server listings
- | {{Type|Boolean}}
- | Servers usually list online players; this option should let you not show up in that list.
- |-
- | Particle Status
+最高有效位（位7，0x80）似乎未使用。
  | {{Type|VarInt}} {{Type|Enum}}
- | 0: all, 1: decreased, 2: minimal
+==== Cookie响应（配置） ====
  |}
-
+对来自服务器的[[#Cookie_Request_(configuration)|Cookie请求（配置）]]的响应。原版服务器只接受最大5 kiB大小的响应。
 ''Displayed Skin Parts'' flags:
 
-* Bit 0 (0x01): Cape enabled
-* Bit 1 (0x02): Jacket enabled
-* Bit 2 (0x04): Left Sleeve enabled
-* Bit 3 (0x08): Right Sleeve enabled
-* Bit 4 (0x10): Left Pants Leg enabled
-* Bit 5 (0x20): Right Pants Leg enabled
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
 * Bit 6 (0x40): Hat enabled
 
-The most significant bit (bit 7, 0x80) appears to be unused.
+  | rowspan="2"| 配置
+  | rowspan="2"| 服务器
+  | Key（键）
 
-==== Cookie Response (configuration) ====
+  | cookie的标识符。
 
-Response to a [[#Cookie_Request_(configuration)|Cookie Request (configuration)]] from the server. The vanilla server only accepts responses of up to 5 kiB in size.
-
-{| class="wikitable"
+  | Payload（有效负载）
  ! Packet ID
- ! State
+  | cookie的数据。
  ! Bound To
  ! Field Name
- ! Field Type
+==== 服务器绑定插件消息（配置） ====
  ! Notes
- |-
+{{Main|Minecraft Wiki:Projects/wiki.vg merge/Plugin channels}}
  | rowspan="2"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>cookie_response</code>
- | rowspan="2"| Configuration
+模组和插件可以使用此功能发送他们的数据。Minecraft本身使用一些[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]。这些内部频道位于<code>minecraft</code>命名空间中。
  | rowspan="2"| Server
- | Key
+有关此内容的更多文档：[https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/]
  | {{Type|Identifier}}
- | The identifier of the cookie.
+请注意，数据的长度仅从数据包长度已知，因为数据包没有任何类型的长度字段。
  |-
  | Payload
  | {{Type|Prefixed Optional}} {{Type|Prefixed Array}} (5120) of {{Type|Byte}}
