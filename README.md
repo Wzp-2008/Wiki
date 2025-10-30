@@ -1,16 +1,16 @@
-{{DISPLAYTITLE:''Java Edition'' protocol/Packets}}
-{{about|the protocol for a stable release of {{JE}}|the protocol used in development versions of {{JE}}|Java Edition protocol/Development version|the protocol used in {{BE}}|Bedrock Edition protocol|the protocol used in old ''[[Pocket Edition]]'' versions|Pocket Edition protocol}}
-{{See also|Java Edition protocol/FAQ|title1=Protocol FAQ}}
+{{DISPLAYTITLE:''Java Edition'' 协议/数据包}}
+{{about|{{JE}}稳定版本的协议|{{JE}}开发版本使用的协议|Java Edition protocol/Development version|{{BE}}使用的协议|Bedrock Edition protocol|旧版''[[Pocket Edition]]''使用的协议|Pocket Edition protocol}}
+{{See also|Java Edition protocol/FAQ|title1=协议常见问题}}
 {{exclusive|java}}
-{{Info|While you may use the contents of this page without restriction to create servers, clients, bots, etc; keep in mind that the contents of this page are distributed under the terms of [https://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0 Unported]. Reproductions and derivative works must be distributed accordingly.}}
+{{Info|虽然您可以不受限制地使用本页面的内容来创建服务器、客户端、机器人等；但请注意，本页面的内容在[https://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0 Unported]条款下发布。复制品和衍生作品必须相应地分发。}}
 
-This article presents a dissection of the current {{JE}} '''protocol''' for [[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|1.21.8, protocol 772]].
+本文介绍了当前{{JE}} '''协议'''的剖析，适用于[[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|1.21.8版本，协议版本772]]。
 
-The changes between versions may be viewed at [[Minecraft Wiki:Projects/wiki.vg merge/Protocol History|Protocol History]].
+版本之间的变化可以在[[Minecraft Wiki:Projects/wiki.vg merge/Protocol History|协议历史]]中查看。
 
-== Definitions ==
+== 定义 ==
 
-The Minecraft server accepts connections from TCP clients and communicates with them using ''packets''. A packet is a sequence of bytes sent over the TCP connection. The meaning of a packet depends both on its packet ID and the current state of the connection. The initial state of each connection is [[#Handshaking|Handshaking]], and state is switched using the packets [[#Handshake|Handshake]] and [[#Login Success|Login Success]].
+Minecraft服务器接受来自TCP客户端的连接，并使用''数据包''与它们通信。数据包是通过TCP连接发送的字节序列。数据包的含义既取决于其数据包ID，也取决于连接的当前状态。每个连接的初始状态是[[#Handshaking|握手]]，状态通过[[#Handshake|握手]]和[[#Login Success|登录成功]]数据包进行切换。
 
 === Data types ===
 
