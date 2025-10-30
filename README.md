@@ -748,201 +748,201 @@ See [[Minecraft Wiki:Projects/wiki.vg merge/Registry_Data|Registry Data]] for de
  |
   | Data（数据）
  | Data
- | {{Type|Prefixed Optional}} {{Type|NBT}}
+  | 条目数据。
  | Entry data.
  |}
-
+==== 移除资源包（配置） ====
 ==== Remove Resource Pack (configuration) ====
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="1"| ''protocol:''<br/><code>0x08</code><br/><br/>''resource:''<br/><code>resource_pack_pop</code>
- | rowspan="1"| Configuration
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
  | rowspan="1"| Client
- | UUID
+  | 要移除的资源包的{{Type|UUID}}。如果不存在，将移除所有资源包。
  | {{Type|Prefixed Optional}} {{Type|UUID}}
  | The {{Type|UUID}} of the resource pack to be removed. If not present, every resource pack will be removed.
- |}
+==== 添加资源包（配置） ====
 
 ==== Add Resource Pack (configuration) ====
-
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Field Type
  ! Notes
- |-
- | rowspan="5"| ''protocol:''<br/><code>0x09</code><br/><br/>''resource:''<br/><code>resource_pack_push</code>
+  | rowspan="5"| 配置
+  | rowspan="5"| 客户端
  | rowspan="5"| Configuration
- | rowspan="5"| Client
+  | 资源包的唯一标识符。
  | UUID
  | {{Type|UUID}}
- | The unique identifier of the resource pack.
+  | 资源包的URL。
  |-
- | URL
+  | Hash（哈希）
  | {{Type|String}} (32767)
- | The URL to the resource pack.
+  | 资源包文件的40字符十六进制、不区分大小写的[[wikipedia:SHA-1|SHA-1]]哈希。<br />如果它不是40字符的十六进制字符串，客户端将不会使用它进行哈希验证，可能会浪费带宽。
  |-
- | Hash
+  | Forced（强制）
  | {{Type|String}} (40)
- | A 40 character hexadecimal, case-insensitive [[wikipedia:SHA-1|SHA-1]] hash of the resource pack file.<br />If it's not a 40-character hexadecimal string, the client will not use it for hash verification and likely waste bandwidth.
+  | 原版客户端将被迫使用来自服务器的资源包。如果他们拒绝，他们将被踢出服务器。
  |-
- | Forced
+  | Prompt Message（提示消息）
  | {{Type|Boolean}}
- | The vanilla client will be forced to use the resource pack from the server. If they decline, they will be kicked from the server.
+  | 这显示在提示中，使客户端接受或拒绝资源包（仅在存在时）。
  |-
  | Prompt Message
- | {{Type|Prefixed Optional}} {{Type|Text Component}}
+==== 存储Cookie（配置） ====
  | This is shown in the prompt making the client accept or decline the resource pack (only if present).
- |}
+在客户端上存储一些任意数据，这些数据在服务器转移之间持久存在。原版客户端只接受最大5 kiB大小的cookie。
 
 ==== Store Cookie (configuration) ====
-
-Stores some arbitrary data on the client, which persists between server transfers. The vanilla client only accepts cookies of up to 5 kiB in size.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | colspan="2"| Key（键）
  | rowspan="2"| ''protocol:''<br/><code>0x0A</code><br/><br/>''resource:''<br/><code>store_cookie</code>
- | rowspan="2"| Configuration
+  | cookie的标识符。
  | rowspan="2"| Client
- | colspan="2"| Key
+  | colspan="2"| Payload（有效负载）
  | colspan="2"| {{Type|Identifier}}
- | The identifier of the cookie.
+  | cookie的数据。
  |-
  | colspan="2"| Payload
- | colspan="2"| {{Type|Prefixed Array}} (5120) of {{Type|Byte}}
+==== 转移（配置） ====
  | The data of the cookie.
- |}
+通知客户端应转移到给定的服务器。之前存储的Cookie在服务器转移之间保留。
 
 ==== Transfer (configuration) ====
-
-Notifies the client that it should transfer to the given server. Cookies previously stored are preserved between server transfers.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | colspan="2"| Host（主机）
  | rowspan="2"| ''protocol:''<br/><code>0x0B</code><br/><br/>''resource:''<br/><code>transfer</code>
- | rowspan="2"| Configuration
+  | 服务器的主机名或IP。
  | rowspan="2"| Client
- | colspan="2"| Host
+  | colspan="2"| Port（端口）
  | colspan="2"| {{Type|String}} (32767)
- | The hostname or IP of the server.
+  | 服务器的端口。
  |-
  | colspan="2"| Port
- | colspan="2"| {{Type|VarInt}}
+==== 功能标志 ====
  | The port of the server.
- |}
+用于在客户端上启用和禁用功能，通常是实验性功能。
 
 ==== Feature Flags ====
-
-Used to enable and disable features, generally experimental ones, on the client.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Bound To
  ! Field Name
- ! Field Type
- ! Notes
- |-
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | Feature Flags（功能标志）
  | rowspan="1"| ''protocol:''<br/><code>0x0C</code><br/><br/>''resource:''<br/><code>update_enabled_features</code>
  | rowspan="1"| Configuration
  | rowspan="1"| Client
  | Feature Flags
- | {{Type|Prefixed Array}} of {{Type|Identifier}}
- |
+有一个特殊的功能标志，在大多数版本中都存在：
+* minecraft:vanilla - 启用原版功能
  |}
-
+对于其他功能标志，它们可能在版本之间发生变化，请参见[[Experiments#Java_Edition]]。
 There is one special feature flag, which is in most versions:
-* minecraft:vanilla - enables vanilla features
+==== 更新标签（配置） ====
 
 For the other feature flags, which may change between versions, see [[Experiments#Java_Edition]].
-
-==== Update Tags (configuration) ====
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
- | rowspan="2"| ''protocol:''<br/><code>0x0D</code><br/><br/>''resource:''<br/><code>update_tags</code>
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Array of tags（标签数组）
+  | Registry（注册表）
  | rowspan="2"| Configuration
  | rowspan="2"| Client
- | rowspan="2"| Array of tags
+  | 注册表标识符（原版期望<code>minecraft:block</code>、<code>minecraft:item</code>、<code>minecraft:fluid</code>、<code>minecraft:entity_type</code>和<code>minecraft:game_event</code>的标签）
  | Registry
- | rowspan="2"| {{Type|Prefixed Array}}
- | {{Type|Identifier}}
+  | Array of Tag（标签数组）
+  | （见下文）
  | Registry identifier (Vanilla expects tags for the registries <code>minecraft:block</code>, <code>minecraft:item</code>, <code>minecraft:fluid</code>, <code>minecraft:entity_type</code>, and <code>minecraft:game_event</code>)
  |-
  | Array of Tag
- | (See below)
+标签数组看起来像这样：
  |
  |}
-
-Tag arrays look like:
-
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
 {| class="wikitable"
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
+  | rowspan="2"| Tags（标签）
+  | Tag name（标签名称）
  ! Notes
  |-
  | rowspan="2"| Tags
  | Tag name
- | rowspan="2"| {{Type|Prefixed Array}}
+  | Entries（条目）
  | {{Type|Identifier}}
- |
+  | 给定类型（方块、物品等）的数字ID。此列表替换给定标签的先前ID列表。如果一些预先存在的标签未被提及，将打印警告。
  |-
  | Entries
- | {{Type|Prefixed Array}} of {{Type|VarInt}}
+有关更多信息，包括原版标签列表，请参见Minecraft Wiki上的[[Tag|标签]]。
  | Numeric IDs of the given type (block, item, etc.). This list replaces the previous list of IDs for the given tag. If some preexisting tags are left unmentioned, a warning is printed.
- |}
+==== 客户端绑定已知包 ====
 
-See [[Tag]] on the Minecraft Wiki for more information, including a list of vanilla tags.
+通知客户端服务器上存在哪些数据包。
+客户端应使用自己的[[#Serverbound_Known_Packs|服务器绑定已知包]]数据包进行响应。
+原版服务器在收到响应之前不会继续配置。
 
-==== Clientbound Known Packs ====
-
-Informs the client of which data packs are present on the server.
+原版客户端需要版本为<code>1.21.8</code>的<code>minecraft:core</code>包才能进行正常的登录序列。此数据包必须在注册表数据包之前发送。
 The client is expected to respond with its own [[#Serverbound_Known_Packs|Serverbound Known Packs]] packet.
 The vanilla server does not continue with Configuration until it receives a response.
-
-The vanilla client requires the <code>minecraft:core</code> pack with version <code>1.21.8</code> for a normal login sequence. This packet must be sent before the Registry Data packets.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
- | rowspan="3"| ''protocol:''<br/><code>0x0E</code><br/><br/>''resource:''<br/><code>select_known_packs</code>
+  | rowspan="3"| 配置
+  | rowspan="3"| 客户端
+  | rowspan="3"| Known Packs（已知包）
+  | Namespace（命名空间）
  | rowspan="3"| Configuration
  | rowspan="3"| Client
  | rowspan="3"| Known Packs
  | Namespace
- | rowspan="3"| {{Type|Prefixed Array}}
+  | ID（标识符）
  | {{Type|String}} (32767)
  |
  |-
