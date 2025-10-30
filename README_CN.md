@@ -628,18 +628,88 @@ Minecraft服务器接受来自TCP客户端的连接，并使用数据包与它�
 
 在实体应该更改动画时发送。
 
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x02`<br/>`animate` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 玩家ID Player ID。 |
+| `0x02`<br/>`animate` | 游戏 Play | 客户端 Client | 动画 Animation | 无符号字节 Unsigned Byte | 动画ID Animation ID（见下文）。 |
+
+动画 Animation 可以是以下值之一：
+
+| ID | 动画 Animation |
+|----|------|
+| 0 | 挥动主手 Swing main arm |
+| 2 | 离开床 Leave bed |
+| 3 | 挥动副手 Swing offhand |
+| 4 | 暴击效果 Critical effect |
+| 5 | 魔法暴击效果 Magic critical effect |
+
+#### 授予统计信息 Award Statistics
+
+作为对客户端状态 Client Status（id 1）的响应发送。如果之前请求过，只会发送更改的值。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x03`<br/>`award_stats` | 游戏 Play | 客户端 Client | 统计信息 Statistics - 类别ID Category ID | 前缀数组 Prefixed Array - VarInt | `minecraft:stat_type` 注册表中的ID；见下文。 |
+| `0x03`<br/>`award_stats` | 游戏 Play | 客户端 Client | 统计信息 Statistics - 统计ID Statistic ID | 前缀数组 Prefixed Array - VarInt | 见下文。 |
+| `0x03`<br/>`award_stats` | 游戏 Play | 客户端 Client | 统计信息 Statistics - 值 Value | 前缀数组 Prefixed Array - VarInt | 要设置的数量。 |
+
+类别 Categories（在 `minecraft:stat_type` 注册表中定义）：
+
+| 名称 Name | ID | 注册表 Registry |
+|------|------|------|
+| `minecraft:mined` | 0 | `minecraft:block` |
+| `minecraft:crafted` | 1 | `minecraft:item` |
+| `minecraft:used` | 2 | `minecraft:item` |
+| `minecraft:broken` | 3 | `minecraft:item` |
+| `minecraft:picked_up` | 4 | `minecraft:item` |
+| `minecraft:dropped` | 5 | `minecraft:item` |
+| `minecraft:killed` | 6 | `minecraft:entity_type` |
+| `minecraft:killed_by` | 7 | `minecraft:entity_type` |
+| `minecraft:custom` | 8 | `minecraft:custom_stat` |
+
+方块 Blocks、物品 Items 和实体 Entities 使用方块（而不是方块状态 block state）、物品和实体ID。
+
+自定义 Custom 使用 `minecraft:custom_stat` 注册表中的ID：
+
+| 名称 Name | ID | 单位 Unit |
+|------|------|------|
+| `minecraft:leave_game` | 0 | 无 None |
+| `minecraft:play_time` | 1 | 时间 Time |
+| `minecraft:total_world_time` | 2 | 时间 Time |
+| `minecraft:time_since_death` | 3 | 时间 Time |
+| `minecraft:time_since_rest` | 4 | 时间 Time |
+| `minecraft:sneak_time` | 5 | 时间 Time |
+| `minecraft:walk_one_cm` | 6 | 距离 Distance |
+| `minecraft:crouch_one_cm` | 7 | 距离 Distance |
+| `minecraft:sprint_one_cm` | 8 | 距离 Distance |
+| `minecraft:walk_on_water_one_cm` | 9 | 距离 Distance |
+| `minecraft:fall_one_cm` | 10 | 距离 Distance |
+| `minecraft:climb_one_cm` | 11 | 距离 Distance |
+| `minecraft:fly_one_cm` | 12 | 距离 Distance |
+| `minecraft:walk_under_water_one_cm` | 13 | 距离 Distance |
+| `minecraft:minecart_one_cm` | 14 | 距离 Distance |
+| `minecraft:boat_one_cm` | 15 | 距离 Distance |
+| `minecraft:pig_one_cm` | 16 | 距离 Distance |
+| `minecraft:horse_one_cm` | 18 | 距离 Distance |
+| `minecraft:aviate_one_cm` | 19 | 距离 Distance |
+| `minecraft:swim_one_cm` | 20 | 距离 Distance |
+
 ---
 
-**翻译进度：第1-5部分完成，第6部分（游戏 Play）开始**
+**翻译进度：第1-5部分完成，第6部分（游戏 Play）进行中**
 
 **已翻译：**
-- 介绍、定义和数据包格式
-- 握手 Handshaking
-- 状态 Status
-- 登录 Login
-- 配置 Configuration
-- 游戏 Play（开始，包含捆绑分隔符、生成实体、实体动画等数据包）
+- 介绍、定义和数据包格式 ✅
+- 握手 Handshaking ✅
+- 状态 Status ✅
+- 登录 Login ✅
+- 配置 Configuration ✅
+- 游戏 Play（进行中）
+  - 捆绑分隔符 Bundle Delimiter ✅
+  - 生成实体 Spawn Entity ✅
+  - 实体动画 Entity Animation ✅
+  - 授予统计信息 Award Statistics ✅
 
 **待继续：**
-- 游戏（Play）剩余部分 - 约8400行
+- 游戏（Play）剩余数据包 - 约8300行
 - 导航（Navigation）
