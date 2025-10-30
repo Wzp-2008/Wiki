@@ -1,1182 +1,1182 @@
-{{DISPLAYTITLE:''Java Edition'' protocol/Packets}}
-{{about|the protocol for a stable release of {{JE}}|the protocol used in development versions of {{JE}}|Java Edition protocol/Development version|the protocol used in {{BE}}|Bedrock Edition protocol|the protocol used in old ''[[Pocket Edition]]'' versions|Pocket Edition protocol}}
-{{See also|Java Edition protocol/FAQ|title1=Protocol FAQ}}
+{{DISPLAYTITLE:''Java Edition'' 协议/数据包}}
+{{about|{{JE}}稳定版本的协议|{{JE}}开发版本使用的协议|Java Edition protocol/Development version|{{BE}}使用的协议|Bedrock Edition protocol|旧版''[[Pocket Edition]]''使用的协议|Pocket Edition protocol}}
+{{See also|Java Edition protocol/FAQ|title1=协议常见问题}}
 {{exclusive|java}}
-{{Info|While you may use the contents of this page without restriction to create servers, clients, bots, etc; keep in mind that the contents of this page are distributed under the terms of [https://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0 Unported]. Reproductions and derivative works must be distributed accordingly.}}
+{{Info|虽然您可以不受限制地使用本页面的内容来创建服务器、客户端、机器人等；但请注意，本页面的内容在[https://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0 Unported]条款下发布。复制品和衍生作品必须相应地分发。}}
 
-This article presents a dissection of the current {{JE}} '''protocol''' for [[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|1.21.8, protocol 772]].
+本文介绍了当前{{JE}} '''协议'''的剖析，适用于[[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|1.21.8版本，协议版本772]]。
 
-The changes between versions may be viewed at [[Minecraft Wiki:Projects/wiki.vg merge/Protocol History|Protocol History]].
+版本之间的变化可以在[[Minecraft Wiki:Projects/wiki.vg merge/Protocol History|协议历史]]中查看。
 
-== Definitions ==
+== 定义 ==
 
-The Minecraft server accepts connections from TCP clients and communicates with them using ''packets''. A packet is a sequence of bytes sent over the TCP connection. The meaning of a packet depends both on its packet ID and the current state of the connection. The initial state of each connection is [[#Handshaking|Handshaking]], and state is switched using the packets [[#Handshake|Handshake]] and [[#Login Success|Login Success]].
+Minecraft服务器接受来自TCP客户端的连接，并使用''数据包''与它们通信。数据包是通过TCP连接发送的字节序列。数据包的含义既取决于其数据包ID，也取决于连接的当前状态。每个连接的初始状态是[[#Handshaking|握手]]，状态通过[[#Handshake|握手]]和[[#Login Success|登录成功]]数据包进行切换。
 
-=== Data types ===
+=== 数据类型 ===
 
 {{:Java Edition protocol/Data types}} <!-- Transcluded contents of Data types article in here — go to that page if you want to edit it -->
 
-=== Other definitions ===
+=== 其他定义 ===
 
 {| class="wikitable"
  |-
- ! Term
- ! Definition
+ ! 术语
+ ! 定义
  |-
- | Player
- | When used in the singular, Player always refers to the client connected to the server.
+ | Player（玩家）
+ | 当单数使用时，Player始终指连接到服务器的客户端。
  |-
- | Entity
- | Entity refers to any item, player, mob, minecart or boat etc. See [[Entity|the Minecraft Wiki article]] for a full list.
+ | Entity（实体）
+ | Entity指任何物品、玩家、生物、矿车或船等。完整列表请参见[[Entity|Minecraft Wiki文章]]。
  |-
  | EID
- | An EID — or Entity ID — is a 4-byte sequence used to identify a specific entity. An entity's EID is unique on the entire server.
+ | EID（或实体ID）是用于标识特定实体的4字节序列。实体的EID在整个服务器上是唯一的。
  |-
  | XYZ
- | In this document, the axis names are the same as those shown in the debug screen (F3). Y points upwards, X points east, and Z points south.
+ | 在本文档中，轴名称与调试屏幕（F3）中显示的相同。Y指向上方，X指向东方，Z指向南方。
  |-
- | Meter
- | The meter is Minecraft's base unit of length, equal to the length of a vertex of a solid block. The term “block” may be used to mean “meter” or “cubic meter”.
+  | Meter（米）
+  | 米是Minecraft的基本长度单位，等于实心方块顶点的长度。术语"方块"可用于表示"米"或"立方米"。
  |-
- | Registry
- | A table describing static, gameplay-related objects of some kind, such as the types of entities, block states or biomes. The entries of a registry are typically associated with textual or numeric identifiers, or both.
+  | Registry（注册表）
+  | 描述某种静态的、与游戏玩法相关的对象的表，例如实体类型、方块状态或生物群系。注册表的条目通常与文本或数字标识符关联，或两者兼有。
 
-Minecraft has a unified registry system used to implement most of the registries, including blocks, items, entities, biomes and dimensions. These "ordinary" registries associate entries with both namespaced textual identifiers (see [[#Identifier]]), and signed (positive) 32-bit numeric identifiers. There is also a registry of registries listing all of the registries in the registry system. Some other registries, most notably the [[Minecraft Wiki:Projects/wiki.vg merge/Chunk Format#Block state registry|block state registry]], are however implemented in a more ad-hoc fashion.
+Minecraft有一个统一的注册表系统，用于实现大多数注册表，包括方块、物品、实体、生物群系和维度。这些"普通"注册表将条目与命名空间文本标识符（参见[[#Identifier]]）和有符号（正）32位数字标识符关联。还有一个注册表的注册表，列出了注册表系统中的所有注册表。然而，其他一些注册表，最显著的是[[Minecraft Wiki:Projects/wiki.vg merge/Chunk Format#Block state registry|方块状态注册表]]，是以更临时的方式实现的。
 
-Some registries, such as biomes and dimensions, can be customized at runtime by the server (see [[Minecraft Wiki:Projects/wiki.vg merge/Registry Data|Registry Data]]), while others, such as blocks, items and entities, are hardcoded. The contents of the hardcoded registries can be extracted via the built-in [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|Data Generators]] system.
+一些注册表，如生物群系和维度，可以在运行时由服务器自定义（参见[[Minecraft Wiki:Projects/wiki.vg merge/Registry Data|注册表数据]]），而其他注册表，如方块、物品和实体，则是硬编码的。硬编码注册表的内容可以通过内置的[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|数据生成器]]系统提取。
  |-
- | Block state
- | Each block in Minecraft has 0 or more properties, which in turn may have any number of possible values. These represent, for example, the orientations of blocks, poweredness states of redstone components, and so on. Each of the possible permutations of property values for a block is a distinct block state. The block state registry assigns a numeric identifier to every block state of every block.
+  | Block state（方块状态）
+  | Minecraft中的每个方块都有0个或多个属性，这些属性反过来可能有任意数量的可能值。这些表示例如方块的方向、红石组件的通电状态等。方块的属性值的每种可能排列都是不同的方块状态。方块状态注册表为每个方块的每个方块状态分配一个数字标识符。
 
-A current list of properties and state ID ranges is found on [https://pokechu22.github.io/Burger/1.21.html burger].
+当前属性和状态ID范围的列表可以在[https://pokechu22.github.io/Burger/1.21.html burger]上找到。
 
-Alternatively, the vanilla server now includes an option to export the current block state ID mapping by running <code>java -DbundlerMainClass=net.minecraft.data.Main -jar minecraft_server.jar --reports</code>.  See [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|Data Generators]] for more information.
+或者，原版服务器现在包含一个选项，可以通过运行<code>java -DbundlerMainClass=net.minecraft.data.Main -jar minecraft_server.jar --reports</code>导出当前方块状态ID映射。有关更多信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators|数据生成器]]。
  |-
- | Vanilla
- | The official implementation of Minecraft as developed and released by Mojang.
+  | Vanilla（原版）
+  | Mojang开发和发布的Minecraft官方实现。
  |-
- | Sequence
- | The action number counter for local block changes, incremented by one when clicking a block with a hand, right-clicking an item, or starting or finishing digging a block. Counter handles latency to avoid applying outdated block changes to the local world. It is also used to revert ghost blocks created when placing blocks, using buckets, or breaking blocks.
+  | Sequence（序列）
+  | 本地方块更改的动作编号计数器，当用手点击方块、右键点击物品或开始或完成挖掘方块时增加一。计数器处理延迟以避免将过时的方块更改应用于本地世界。它还用于还原放置方块、使用桶或破坏方块时创建的幽灵方块。
  |}
 
-== Packet format ==
+== 数据包格式 ==
 
-Packets cannot be larger than 2<sup>21</sup> &minus; 1 or 2097151 bytes (the maximum that can be sent in a 3-byte {{Type|VarInt}}). Moreover, the length field must not be longer than 3 bytes, even if the encoded value is within the limit. Unnecessarily long encodings at 3 bytes or below are still allowed.  For compressed packets, this applies to the Packet Length field, i.e. the compressed length.
+数据包不能大于2<sup>21</sup> &minus; 1或2097151字节（可以在3字节{{Type|VarInt}}中发送的最大值）。此外，即使编码值在限制内，长度字段也不得超过3字节。仍然允许3字节或以下的不必要的长编码。对于压缩数据包，这适用于数据包长度字段，即压缩长度。
 
-=== Without compression ===
+=== 无压缩 ===
 
 {| class="wikitable"
- ! Field Name
- ! Field Type
- ! Notes
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
- | Length
+  | Length（长度）
  | {{Type|VarInt}}
- | Length of Packet ID + Data
+  | 数据包ID + 数据的长度
  |-
- | Packet ID
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | Corresponds to <code>protocol_id</code> from [[Minecraft Wiki:Projects/wiki.vg merge/Data Generators#Packets report|the server's packet report]]
+  | 对应于[[Minecraft Wiki:Projects/wiki.vg merge/Data Generators#Packets report|服务器数据包报告]]中的<code>protocol_id</code>
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | Depends on the connection state and packet ID, see the sections below
+  | 取决于连接状态和数据包ID，请参见下面的章节
  |}
 
-=== With compression ===
+=== 有压缩 ===
 
-Once a [[#Set Compression|Set Compression]] packet (with a non-negative threshold) is sent, [[wikipedia:Zlib|zlib]] compression is enabled for all following packets. The format of a packet changes slightly to include the size of the uncompressed packet.
+一旦发送[[#Set Compression|设置压缩]]数据包（具有非负阈值），[[wikipedia:Zlib|zlib]]压缩将对所有后续数据包启用。数据包的格式会略有变化以包含未压缩数据包的大小。
 
 {| class=wikitable
- ! Present?
- ! Compressed?
- ! Field Name
- ! Field Type
- ! Notes
+  ! 存在？
+  ! 压缩？
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
- | always
- | No
- | Packet Length
+  | 总是
+  | 否
+  | Packet Length（数据包长度）
  | {{Type|VarInt}}
- | Length of (Data Length) + length of compressed (Packet ID + Data)
+  | （数据长度）的长度 + 压缩的（数据包ID + 数据）的长度
  |-
- | rowspan="3"| if size >= threshold
- | No
- | Data Length
+  | rowspan="3"| 如果 size >= threshold
+  | 否
+  | Data Length（数据长度）
  | {{Type|VarInt}}
- | Length of uncompressed (Packet ID + Data)
+  | 未压缩的（数据包ID + 数据）的长度
  |-
- | rowspan="2"| Yes
- | Packet ID
+  | rowspan="2"| 是
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | zlib compressed packet ID (see the sections below)
+  | zlib压缩的数据包ID（请参见下面的章节）
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | zlib compressed packet data (see the sections below)
+  | zlib压缩的数据包数据（请参见下面的章节）
  |-
- | rowspan="3"| if size < threshold
- | rowspan="3"| No
- | Data Length
+  | rowspan="3"| 如果 size < threshold
+  | rowspan="3"| 否
+  | Data Length（数据长度）
  | {{Type|VarInt}}
- | 0 to indicate uncompressed
+  | 0表示未压缩
  |-
- | Packet ID
+  | Packet ID（数据包ID）
  | {{Type|VarInt}}
- | packet ID (see the sections below)
+  | 数据包ID（请参见下面的章节）
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}}
- | packet data (see the sections below)
+  | 数据包数据（请参见下面的章节）
  |}
 
-For serverbound packets, the uncompressed length of (Packet ID + Data) must not be greater than 2<sup>23</sup> or 8388608 bytes. Note that a length equal to 2<sup>23</sup> is permitted, which differs from the compressed length limit. The vanilla client, on the other hand, has no limit for the uncompressed length of incoming compressed packets.
+对于服务器绑定数据包，（数据包ID + 数据）的未压缩长度不得大于2<sup>23</sup>或8388608字节。请注意，允许等于2<sup>23</sup>的长度，这与压缩长度限制不同。另一方面，原版客户端对传入压缩数据包的未压缩长度没有限制。
 
-If the size of the buffer containing the packet data and ID (as a {{Type|VarInt}}) is smaller than the threshold specified in the packet [[#Set Compression|Set Compression]]. It will be sent as uncompressed. This is done by setting the data length to 0. (Comparable to sending a non-compressed format with an extra 0 between the length and packet data).
+如果包含数据包数据和ID（作为{{Type|VarInt}}）的缓冲区的大小小于[[#Set Compression|设置压缩]]数据包中指定的阈值，它将以未压缩方式发送。这是通过将数据长度设置为0来完成的。（相当于在长度和数据包数据之间发送带有额外0的非压缩格式）。
 
-If it's larger than or equal to the threshold, then it follows the regular compressed protocol format.
+如果它大于或等于阈值，则遵循常规压缩协议格式。
 
-The vanilla server (but not client) rejects compressed packets smaller than the threshold. Uncompressed packets exceeding the threshold, however, are accepted.
+原版服务器（但不是客户端）拒绝小于阈值的压缩数据包。但是，超过阈值的未压缩数据包被接受。
 
-Compression can be disabled by sending the packet [[#Set Compression|Set Compression]] with a negative Threshold, or not sending the Set Compression packet at all.
+可以通过发送具有负阈值的[[#Set Compression|设置压缩]]数据包或根本不发送设置压缩数据包来禁用压缩。
 
-== Handshaking ==
+== 握手 ==
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-There are no clientbound packets in the Handshaking state, since the protocol immediately switches to a different state after the client sends the first packet.
+在握手状态下没有客户端绑定数据包，因为协议在客户端发送第一个数据包后立即切换到不同的状态。
 
-=== Serverbound ===
+=== 服务器绑定 ===
 
-==== Handshake ====
+==== 握手 ====
 
-This packet causes the server to switch into the target state. It should be sent right after opening the TCP connection to prevent the server from disconnecting.
+此数据包使服务器切换到目标状态。它应在打开TCP连接后立即发送，以防止服务器断开连接。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="4"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>intention</code>
  | rowspan="4"| Handshaking
- | rowspan="4"| Server
- | Protocol Version
- | {{Type|VarInt}}
+  | rowspan="4"| 握手
+  | rowspan="4"| 服务器
+  | Protocol Version（协议版本）
  | See [[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|protocol version numbers]] (currently 772 in Minecraft 1.21.8).
- |-
+  | 参见[[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|协议版本号]]（当前在Minecraft 1.21.8中为772）。
  | Server Address
- | {{Type|String}} (255)
+  | Server Address（服务器地址）
  | Hostname or IP, e.g. localhost or 127.0.0.1, that was used to connect. The vanilla server does not use this information. Note that SRV records are a simple redirect, e.g. if _minecraft._tcp.example.com points to mc.example.org, users connecting to example.com will provide example.org as the server address in addition to connecting to it.
- |-
+  | 主机名或IP，例如localhost或127.0.0.1，用于连接。原版服务器不使用此信息。请注意，SRV记录是简单的重定向，例如，如果_minecraft._tcp.example.com指向mc.example.org，连接到example.com的用户将在连接到它的同时提供example.org作为服务器地址。
  | Server Port
- | {{Type|Unsigned Short}}
+  | Server Port（服务器端口）
  | Default is 25565. The vanilla server does not use this information.
- |-
+  | 默认为25565。原版服务器不使用此信息。
  | Intent
- | {{Type|VarInt}} {{Type|Enum}}
+  | Intent（意图）
  | 1 for [[#Status|Status]], 2 for [[#Login|Login]], 3 for [[#Login|Transfer]].
- |}
+  | 1表示[[#Status|状态]]，2表示[[#Login|登录]]，3表示[[#Login|转移]]。
 
 ==== Legacy Server List Ping ====
-
+==== 旧版服务器列表Ping ====
 {{Warning|This packet uses a nonstandard format. It is never length-prefixed, and the packet ID is an {{Type|Unsigned Byte}} instead of a {{Type|VarInt}}.}}
-
+{{Warning|此数据包使用非标准格式。它从不带长度前缀，数据包ID是{{Type|Unsigned Byte}}而不是{{Type|VarInt}}。}}
 While not technically part of the current protocol, (legacy) clients may send this packet to initiate [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping|Server List Ping]], and modern servers should handle it correctly.
-The format of this packet is a remnant of the pre-Netty age, before the switch to Netty in 1.7 brought the standard format that is recognized now. This packet merely exists to inform legacy clients that they can't join our modern server.
-
+虽然在技术上不是当前协议的一部分，（旧版）客户端可能会发送此数据包以启动[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping|服务器列表Ping]]，现代服务器应正确处理它。
+此数据包的格式是pre-Netty时代的遗留物，在1.7切换到Netty之前，它带来了现在识别的标准格式。此数据包仅用于通知旧版客户端他们无法加入我们的现代服务器。
 Modern clients (tested with 1.21.5 + 1.21.4) also send this packet when the server does not send any response within a 30 seconds time window or when the connection is immediately closed.
-{{Warning|The client does not close the connection with the legacy packet on its own!
-It only gets closed when the Minecraft client is closed.}}
-{| class="wikitable"
+现代客户端（使用1.21.5 + 1.21.4测试）也会在服务器在30秒时间窗口内未发送任何响应或连接立即关闭时发送此数据包。
+{{Warning|客户端不会自行使用旧版数据包关闭连接！
+只有在Minecraft客户端关闭时才会关闭。}}
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | 0xFE
  | Handshaking
- | Server
- | Payload
- | {{Type|Unsigned Byte}}
+  | 握手
+  | 服务器
+  | Payload（有效负载）
  | always 1 (<code>0x01</code>).
- |}
+  | 总是1（<code>0x01</code>）。
 
 See [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#1.6|Server List Ping#1.6]] for the details of the protocol that follows this packet.
-== Status ==
+参见[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#1.6|服务器列表Ping#1.6]]以获取此数据包后续协议的详细信息。
+== 状态 ==
 {{Main|Minecraft Wiki:Projects/wiki.vg merge/Server List Ping}}
-
 === Clientbound ===
-
+=== 客户端绑定 ===
 ==== Status Response ====
-
+==== 状态响应 ====
 {| class="wikitable"
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>status_response</code>
  | Status
- | Client
- | JSON Response
- | {{Type|String}} (32767)
+  | 状态
+  | 客户端
+  | JSON Response（JSON响应）
  | See [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#Status Response|Server List Ping#Status Response]]; as with all strings, this is prefixed by its length as a {{Type|VarInt}}.
- |}
+  | 参见[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#Status Response|服务器列表Ping#状态响应]]；与所有字符串一样，它的长度作为{{Type|VarInt}}前缀。
 
 ==== Pong Response (status) ====
-
+==== Pong响应（状态） ====
 {| class="wikitable"
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>pong_response</code>
  | Status
- | Client
- | Timestamp
- | {{Type|Long}}
+  | 状态
+  | 客户端
+  | Timestamp（时间戳）
  | Should match the one sent by the client.
- |}
+  | 应与客户端发送的时间戳匹配。
 
-=== Serverbound ===
+=== 服务器绑定 ===
 
-==== Status Request ====
+==== 状态请求 ====
 
-The status can only be requested once, immediately after the handshake, before any ping. The server won't respond otherwise.
+状态只能在握手后立即请求一次，在任何ping之前。否则服务器不会响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>status_request</code>
- | Status
- | Server
- | colspan="3"| ''no fields''
+  | 状态
+  | 服务器
+  | colspan="3"| 无字段
  |}
 
-==== Ping Request (status) ====
+==== Ping请求（状态） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>ping_request</code>
- | Status
- | Server
- | Timestamp
+  | 状态
+  | 服务器
+  | Timestamp（时间戳）
  | {{Type|Long}}
- | May be any number, but vanilla clients will always use the timestamp in milliseconds.
+  | 可以是任何数字，但原版客户端将始终使用以毫秒为单位的时间戳。
  |}
 
-== Login ==
+== 登录 ==
 
-The login process is as follows:
+登录过程如下：
 
-# C→S: [[#Handshake|Handshake]] with intent set to 2 (login)
-# C→S: [[#Login Start|Login Start]]
-# S→C: [[#Encryption Request|Encryption Request]]
-# Client auth (if enabled)
-# C→S: [[#Encryption Response|Encryption Response]]
-# Server auth (if enabled)
-# Both enable encryption
-# S→C: [[#Set Compression|Set Compression]] (optional)
-# S→C: [[#Login Success|Login Success]]
-# C→S: [[#Login Acknowledged|Login Acknowledged]]
+# C→S：[[#Handshake|握手]]，意图设置为2（登录）
+# C→S：[[#Login Start|登录开始]]
+# S→C：[[#Encryption Request|加密请求]]
+# 客户端认证（如果启用）
+# C→S：[[#Encryption Response|加密响应]]
+# 服务器认证（如果启用）
+# 双方启用加密
+# S→C：[[#Set Compression|设置压缩]]（可选）
+# S→C：[[#Login Success|登录成功]]
+# C→S：[[#Login Acknowledged|登录确认]]
 
-Set Compression, if present, must be sent before Login Success. Note that anything sent after Set Compression must use the [[#With compression|Post Compression packet format]].
+如果存在设置压缩，必须在登录成功之前发送。请注意，设置压缩后发送的任何内容都必须使用[[#With compression|压缩后数据包格式]]。
 
-Three modes of operation are possible depending on how the packets are sent:
-* Online-mode with encryption
-* Offline-mode with encryption
-* Offline-mode without encryption
+根据数据包的发送方式，可能有三种操作模式：
+* 在线模式（带加密）
+* 离线模式（带加密）
+* 离线模式（不带加密）
 
-For online-mode servers (the ones with authentication enabled), encryption is always mandatory, and the entire process described above needs to be followed.
+对于在线模式服务器（启用了身份验证的服务器），加密始终是强制性的，并且需要遵循上述整个过程。
 
-For offline-mode servers (the ones with authentication disabled), encryption is optional, and part of the process can be skipped. In that case, [[#Login Start|Login Start]] is directly followed by [[#Login Success|Login Success]]. The vanilla server only uses UUID v3 for offline player UUIDs, deriving it from the string <code>OfflinePlayer:<player's name></code>. For example, Notch’s offline UUID would be chosen from the string <code>OfflinePlayer:Notch</code>. This is not a requirement however, the UUID can be set to anything.
+对于离线模式服务器（禁用了身份验证的服务器），加密是可选的，可以跳过部分过程。在这种情况下，[[#Login Start|登录开始]]直接跟随[[#Login Success|登录成功]]。原版服务器仅对离线玩家UUID使用UUID v3，从字符串<code>OfflinePlayer:<player's name></code>派生它。例如，Notch的离线UUID将从字符串<code>OfflinePlayer:Notch</code>中选择。但这不是必需的，UUID可以设置为任何值。
 
-As of 1.21, the vanilla server never uses encryption in offline mode.
+自1.21起，原版服务器在离线模式下从不使用加密。
 
-See [[protocol encryption]] for details.
+有关详细信息，请参见[[protocol encryption|协议加密]]。
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-==== Disconnect (login) ====
+==== 断开连接（登录） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>login_disconnect</code>
- | Login
- | Client
- | Reason
+  | 登录
+  | 客户端
+  | Reason（原因）
  | {{Type|JSON Text Component}}
- | The reason why the player was disconnected.
+  | 玩家被断开连接的原因。
  |}
 
-==== Encryption Request ====
+==== 加密请求 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="4"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>hello</code>
- | rowspan="4"| Login
- | rowspan="4"| Client
- | Server ID
+  | rowspan="4"| 登录
+  | rowspan="4"| 客户端
+  | Server ID（服务器ID）
  | {{Type|String}} (20)
- | Always empty when sent by the vanilla server.
+  | 由原版服务器发送时始终为空。
  |-
- | Public Key
+  | Public Key（公钥）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | The server's public key, in bytes.
+  | 服务器的公钥，以字节为单位。
  |-
- | Verify Token
+  | Verify Token（验证令牌）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | A sequence of random bytes generated by the server.
+  | 由服务器生成的随机字节序列。
  |-
- | Should authenticate
+  | Should authenticate（应该认证）
  | {{Type|Boolean}}
- | Whether the client should attempt to [[Minecraft Wiki:Projects/wiki.vg merge/Protocol_Encryption#Authentication|authenticate through mojang servers]].
+  | 客户端是否应尝试[[Minecraft Wiki:Projects/wiki.vg merge/Protocol_Encryption#Authentication|通过mojang服务器进行身份验证]]。
  |}
 
-See [[protocol encryption]] for details.
+有关详细信息，请参见[[protocol encryption|协议加密]]。
 
-==== Login Success ====
+==== 登录成功 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x02</code><br/><br/>''resource:''<br/><code>login_finished</code>
- | rowspan="1"| Login
- | rowspan="1"| Client
- | Profile
+  | rowspan="1"| 登录
+  | rowspan="1"| 客户端
+  | Profile（档案）
  | {{Type|Game Profile}}
  | 
  |}
-
+==== 设置压缩 ====
 ==== Set Compression ====
-
+启用压缩。如果启用压缩，所有后续数据包都将以[[#With compression|压缩数据包格式]]编码。负值将禁用压缩，这意味着数据包格式应保持在[[#Without compression|未压缩数据包格式]]。但是，此数据包是完全可选的，如果不发送，压缩也不会启用（当禁用压缩时，原版服务器不会发送数据包）。
 Enables compression.  If compression is enabled, all following packets are encoded in the [[#With compression|compressed packet format]].  Negative values will disable compression, meaning the packet format should remain in the [[#Without compression|uncompressed packet format]].  However, this packet is entirely optional, and if not sent, compression will also not be enabled (the vanilla server does not send the packet when compression is disabled).
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | ''protocol:''<br/><code>0x03</code><br/><br/>''resource:''<br/><code>login_compression</code>
- | Login
- | Client
+  | 登录
+  | 客户端
+  | Threshold（阈值）
  | Threshold
- | {{Type|VarInt}}
+  | 数据包在压缩之前的最大大小。
  | Maximum size of a packet before it is compressed.
  |}
-
+==== 登录插件请求 ====
 ==== Login Plugin Request ====
-
+用于与[[#Login Plugin Response|登录插件响应]]一起实现自定义握手流程。
 Used to implement a custom handshaking flow together with [[#Login Plugin Response|Login Plugin Response]].
-
+与"play"模式下的插件消息不同，这些消息遵循锁步请求/响应方案，其中客户端应响应请求，指示它是否理解。原版客户端始终响应它不理解并发送空有效负载。
 Unlike plugin messages in "play" mode, these messages follow a lock-step request/response scheme, where the client is expected to respond to a request indicating whether it understood. The vanilla client always responds that it hasn't understood and sends an empty payload.
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="3"| ''protocol:''<br/><code>0x04</code><br/><br/>''resource:''<br/><code>custom_query</code>
- | rowspan="3"| Login
- | rowspan="3"| Client
+  | rowspan="3"| 登录
+  | rowspan="3"| 客户端
+  | Message ID（消息ID）
  | Message ID
- | {{Type|VarInt}}
+  | 由服务器生成 - 应该对连接是唯一的。
  | Generated by the server - should be unique to the connection.
- |-
+  | Channel（频道）
  | Channel
- | {{Type|Identifier}}
+  | 用于发送数据的[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]的名称。
  | Name of the [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|plugin channel]] used to send the data.
- |-
+  | Data（数据）
  | Data
- | {{Type|Byte Array}} (1048576)
+  | 任何数据，取决于频道。此数组的长度必须从数据包长度推断。
  | Any data, depending on the channel. The length of this array must be inferred from the packet length.
  |}
-
+==== Cookie请求（登录） ====
 ==== Cookie Request (login) ====
-
+请求之前存储的cookie。
 Requests a cookie that was previously stored.
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="1"| ''protocol:''<br/><code>0x05</code><br/><br/>''resource:''<br/><code>cookie_request</code>
- | rowspan="1"| Login
- | rowspan="1"| Client
+  | rowspan="1"| 登录
+  | rowspan="1"| 客户端
+  | colspan="2"| Key（键）
  | colspan="2"| Key
- | colspan="2"| {{Type|Identifier}}
+  | cookie的标识符。
  | The identifier of the cookie.
  |}
-
+=== 服务器绑定 ===
 === Serverbound ===
-
+==== 登录开始 ====
 ==== Login Start ====
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="2"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>hello</code>
- | rowspan="2"| Login
- | rowspan="2"| Server
+  | rowspan="2"| 登录
+  | rowspan="2"| 服务器
+  | Name（名称）
  | Name
- | {{Type|String}} (16)
+  | 玩家的用户名。
  | Player's Username.
- |-
+  | Player UUID（玩家UUID）
  | Player UUID
- | {{Type|UUID}}
+  | 登录玩家的{{Type|UUID}}。原版服务器未使用。
  | The {{Type|UUID}} of the player logging in. Unused by the vanilla server.
  |}
 
-==== Encryption Response ====
+==== 加密响应 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>key</code>
- | rowspan="2"| Login
- | rowspan="2"| Server
- | Shared Secret
+  | rowspan="2"| 登录
+  | rowspan="2"| 服务器
+  | Shared Secret（共享密钥）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | Shared Secret value, encrypted with the server's public key.
+  | 共享密钥值，使用服务器的公钥加密。
  |-
- | Verify Token
+  | Verify Token（验证令牌）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | Verify Token value, encrypted with the same public key as the shared secret.
+  | 验证令牌值，使用与共享密钥相同的公钥加密。
  |}
 
-See [[protocol encryption]] for details.
+有关详细信息，请参见[[protocol encryption|协议加密]]。
 
-==== Login Plugin Response ====
+==== 登录插件响应 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x02</code><br/><br/>''resource:''<br/><code>custom_query_answer</code>
- | rowspan="2"| Login
- | rowspan="2"| Server
- | Message ID
+  | rowspan="2"| 登录
+  | rowspan="2"| 服务器
+  | Message ID（消息ID）
  | {{Type|VarInt}}
- | Should match ID from server.
+  | 应与来自服务器的ID匹配。
  |-
- | Data
+  | Data（数据）
  | {{Type|Prefixed Optional}} {{Type|Byte Array}} (1048576)
- | Any data, depending on the channel. The length of this array must be inferred from the packet length. Only present if the client understood the request.
+  | 任何数据，取决于频道。此数组的长度必须从数据包长度推断。仅在客户端理解请求时存在。
  |}
 
-==== Login Acknowledged ====
+==== 登录确认 ====
 
-Acknowledgement to the [[Java Edition protocol/Packets#Login Success|Login Success]] packet sent by the server.
+对服务器发送的[[Java Edition protocol/Packets#Login Success|登录成功]]数据包的确认。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x03</code><br/><br/>''resource:''<br/><code>login_acknowledged</code>
- | Login
- | Server
- | colspan="3"| ''no fields''
+  | 登录
+  | 服务器
+  | colspan="3"| 无字段
  |}
 
-This packet switches the connection state to [[#Configuration|configuration]].
+此数据包将连接状态切换到[[#Configuration|配置]]。
 
-==== Cookie Response (login) ====
+==== Cookie响应（登录） ====
 
-Response to a [[#Cookie_Request_(login)|Cookie Request (login)]] from the server. The vanilla server only accepts responses of up to 5 kiB in size.
+对来自服务器的[[#Cookie_Request_(login)|Cookie请求（登录）]]的响应。原版服务器只接受最大5 kiB大小的响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x04</code><br/><br/>''resource:''<br/><code>cookie_response</code>
- | rowspan="2"| Login
- | rowspan="2"| Server
- | Key
+  | rowspan="2"| 登录
+  | rowspan="2"| 服务器
+  | Key（键）
  | {{Type|Identifier}}
- | The identifier of the cookie.
+  | cookie的标识符。
  |-
- | Payload
+  | Payload（有效负载）
  | {{Type|Prefixed Optional}} {{Type|Prefixed Array}} (5120) of {{Type|Byte}}
- | The data of the cookie.
+  | cookie的数据。
  |}
 
-== Configuration ==
+== 配置 ==
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-==== Cookie Request (configuration) ====
+==== Cookie请求（配置） ====
 
-Requests a cookie that was previously stored.
+请求之前存储的cookie。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>cookie_request</code>
- | rowspan="1"| Configuration
- | rowspan="1"| Client
- | colspan="2"| Key
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | colspan="2"| Key（键）
  | colspan="2"| {{Type|Identifier}}
- | The identifier of the cookie.
+  | cookie的标识符。
  |}
 
-==== Clientbound Plugin Message (configuration) ====
+==== 客户端绑定插件消息（配置） ====
 
 {{Main|Minecraft Wiki:Projects/wiki.vg merge/Plugin channels}}
 
-Mods and plugins can use this to send their data. Minecraft itself uses several [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|plugin channels]]. These internal channels are in the <code>minecraft</code> namespace.
+模组和插件可以使用此功能发送他们的数据。Minecraft本身使用多个[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]。这些内部频道位于<code>minecraft</code>命名空间中。
 
-More information on how it works on [https://web.archive.org/web/20220831140929/https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ Dinnerbone's blog]. More documentation about internal and popular registered channels are [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|here]].
+有关其工作原理的更多信息，请访问[https://web.archive.org/web/20220831140929/https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ Dinnerbone的博客]。有关内部和流行注册频道的更多文档在[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|这里]]。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>custom_payload</code>
- | rowspan="2"| Configuration
- | rowspan="2"| Client
- | Channel
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | Channel（频道）
  | {{Type|Identifier}}
- | Name of the [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|plugin channel]] used to send the data.
+  | 用于发送数据的[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]的名称。
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}} (1048576)
- | Any data. The length of this array must be inferred from the packet length.
+  | 任何数据。此数组的长度必须从数据包长度推断。
  |}
 
-In vanilla clients, the maximum data length is 1048576 bytes.
+在原版客户端中，最大数据长度为1048576字节。
 
-==== Disconnect (configuration) ====
+==== 断开连接（配置） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x02</code><br/><br/>''resource:''<br/><code>disconnect</code>
- | Configuration 
- | Client
- | Reason
+  | 配置
+  | 客户端
+  | Reason（原因）
  | {{Type|Text Component}}
- | The reason why the player was disconnected.
+  | 玩家被断开连接的原因。
  |}
 
-==== Finish Configuration ====
+==== 完成配置 ====
 
-Sent by the server to notify the client that the configuration process has finished. The client answers with [[#Acknowledge_Finish_Configuration|Acknowledge Finish Configuration]] whenever it is ready to continue.
+由服务器发送以通知客户端配置过程已完成。客户端在准备好继续时使用[[#Acknowledge_Finish_Configuration|确认完成配置]]进行响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x03</code><br/><br/>''resource:''<br/><code>finish_configuration</code>
- | rowspan="1"| Configuration
- | rowspan="1"| Client
- | colspan="3"| ''no fields''
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | colspan="3"| 无字段
  |}
 
-This packet switches the connection state to [[#Play|play]].
+此数据包将连接状态切换到[[#Play|游戏]]。
 
-==== Clientbound Keep Alive (configuration) ====
+==== 客户端绑定保持活动（配置） ====
 
-The server will frequently send out a keep-alive, each containing a random ID. The client must respond with the same payload (see [[#Serverbound Keep Alive (configuration)|Serverbound Keep Alive]]). If the client does not respond to a Keep Alive packet within 15 seconds after it was sent, the server kicks the client. Vice versa, if the server does not send any keep-alives for 20 seconds, the client will disconnect and yield a "Timed out" exception.
+服务器将频繁发送保持活动，每个都包含一个随机ID。客户端必须使用相同的有效负载响应（参见[[#Serverbound Keep Alive (configuration)|服务器绑定保持活动]]）。如果客户端在发送后15秒内没有响应保持活动数据包，服务器会踢出客户端。反之亦然，如果服务器在20秒内没有发送任何保持活动，客户端将断开连接并产生"超时"异常。
 
-The vanilla server uses a system-dependent time in milliseconds to generate the keep alive ID value.
+原版服务器使用系统相关的毫秒时间来生成保持活动ID值。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x04</code><br/><br/>''resource:''<br/><code>keep_alive</code>
- | Configuration
- | Client
- | Keep Alive ID
+  | 配置
+  | 客户端
+  | Keep Alive ID（保持活动ID）
  | {{Type|Long}}
  |
  |}
 
-==== Ping (configuration) ====
+==== Ping（配置） ====
 
-Packet is not used by the vanilla server. When sent to the client, the client responds with a [[#Pong (configuration)|Pong]] packet with the same ID.
+原版服务器不使用此数据包。当发送给客户端时，客户端使用具有相同ID的[[#Pong (configuration)|Pong]]数据包进行响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x05</code><br/><br/>''resource:''<br/><code>ping</code>
- | Configuration
- | Client
+  | 配置
+  | 客户端
  | ID
  | {{Type|Int}}
  |
  |}
-
+==== 重置聊天 ====
 ==== Reset Chat ====
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | ''protocol:''<br/><code>0x06</code><br/><br/>''resource:''<br/><code>reset_chat</code>
- | Configuration
- | Client
+  | 配置
+  | 客户端
+  | colspan="3"| 无字段
  | colspan="3"| ''no fields''
  |}
-
+==== 注册表数据 ====
 ==== Registry Data ====
-
+表示从服务器发送并应用于客户端的某些注册表。
 Represents certain registries that are sent from the server and are applied on the client.
-
+有关详细信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Registry_Data|注册表数据]]。
 See [[Minecraft Wiki:Projects/wiki.vg merge/Registry_Data|Registry Data]] for details.
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="3"| ''protocol:''<br/><code>0x07</code><br/><br/>''resource:''<br/><code>registry_data</code>
- | rowspan="3"| Configuration
- | rowspan="3"| Client
+  | rowspan="3"| 配置
+  | rowspan="3"| 客户端
+  | colspan="2"| Registry ID（注册表ID）
  | colspan="2"| Registry ID
  | colspan="2"| {{Type|Identifier}}
  | 
- |-
- | rowspan="2"| Entries
+  | rowspan="2"| Entries（条目）
+  | Entry ID（条目ID）
  | Entry ID
  | rowspan="2"| {{Type|Prefixed Array}}
  | {{Type|Identifier}}
  |
- |-
+  | Data（数据）
  | Data
- | {{Type|Prefixed Optional}} {{Type|NBT}}
+  | 条目数据。
  | Entry data.
  |}
-
+==== 移除资源包（配置） ====
 ==== Remove Resource Pack (configuration) ====
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="1"| ''protocol:''<br/><code>0x08</code><br/><br/>''resource:''<br/><code>resource_pack_pop</code>
- | rowspan="1"| Configuration
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
  | rowspan="1"| Client
- | UUID
+  | 要移除的资源包的{{Type|UUID}}。如果不存在，将移除所有资源包。
  | {{Type|Prefixed Optional}} {{Type|UUID}}
  | The {{Type|UUID}} of the resource pack to be removed. If not present, every resource pack will be removed.
- |}
+==== 添加资源包（配置） ====
 
 ==== Add Resource Pack (configuration) ====
-
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Field Type
  ! Notes
- |-
- | rowspan="5"| ''protocol:''<br/><code>0x09</code><br/><br/>''resource:''<br/><code>resource_pack_push</code>
+  | rowspan="5"| 配置
+  | rowspan="5"| 客户端
  | rowspan="5"| Configuration
- | rowspan="5"| Client
+  | 资源包的唯一标识符。
  | UUID
  | {{Type|UUID}}
- | The unique identifier of the resource pack.
+  | 资源包的URL。
  |-
- | URL
+  | Hash（哈希）
  | {{Type|String}} (32767)
- | The URL to the resource pack.
+  | 资源包文件的40字符十六进制、不区分大小写的[[wikipedia:SHA-1|SHA-1]]哈希。<br />如果它不是40字符的十六进制字符串，客户端将不会使用它进行哈希验证，可能会浪费带宽。
  |-
- | Hash
+  | Forced（强制）
  | {{Type|String}} (40)
- | A 40 character hexadecimal, case-insensitive [[wikipedia:SHA-1|SHA-1]] hash of the resource pack file.<br />If it's not a 40-character hexadecimal string, the client will not use it for hash verification and likely waste bandwidth.
+  | 原版客户端将被迫使用来自服务器的资源包。如果他们拒绝，他们将被踢出服务器。
  |-
- | Forced
+  | Prompt Message（提示消息）
  | {{Type|Boolean}}
- | The vanilla client will be forced to use the resource pack from the server. If they decline, they will be kicked from the server.
+  | 这显示在提示中，使客户端接受或拒绝资源包（仅在存在时）。
  |-
  | Prompt Message
- | {{Type|Prefixed Optional}} {{Type|Text Component}}
+==== 存储Cookie（配置） ====
  | This is shown in the prompt making the client accept or decline the resource pack (only if present).
- |}
+在客户端上存储一些任意数据，这些数据在服务器转移之间持久存在。原版客户端只接受最大5 kiB大小的cookie。
 
 ==== Store Cookie (configuration) ====
-
-Stores some arbitrary data on the client, which persists between server transfers. The vanilla client only accepts cookies of up to 5 kiB in size.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | colspan="2"| Key（键）
  | rowspan="2"| ''protocol:''<br/><code>0x0A</code><br/><br/>''resource:''<br/><code>store_cookie</code>
- | rowspan="2"| Configuration
+  | cookie的标识符。
  | rowspan="2"| Client
- | colspan="2"| Key
+  | colspan="2"| Payload（有效负载）
  | colspan="2"| {{Type|Identifier}}
- | The identifier of the cookie.
+  | cookie的数据。
  |-
  | colspan="2"| Payload
- | colspan="2"| {{Type|Prefixed Array}} (5120) of {{Type|Byte}}
+==== 转移（配置） ====
  | The data of the cookie.
- |}
+通知客户端应转移到给定的服务器。之前存储的Cookie在服务器转移之间保留。
 
 ==== Transfer (configuration) ====
-
-Notifies the client that it should transfer to the given server. Cookies previously stored are preserved between server transfers.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | colspan="2"| Host（主机）
  | rowspan="2"| ''protocol:''<br/><code>0x0B</code><br/><br/>''resource:''<br/><code>transfer</code>
- | rowspan="2"| Configuration
+  | 服务器的主机名或IP。
  | rowspan="2"| Client
- | colspan="2"| Host
+  | colspan="2"| Port（端口）
  | colspan="2"| {{Type|String}} (32767)
- | The hostname or IP of the server.
+  | 服务器的端口。
  |-
  | colspan="2"| Port
- | colspan="2"| {{Type|VarInt}}
+==== 功能标志 ====
  | The port of the server.
- |}
+用于在客户端上启用和禁用功能，通常是实验性功能。
 
 ==== Feature Flags ====
-
-Used to enable and disable features, generally experimental ones, on the client.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Bound To
  ! Field Name
- ! Field Type
- ! Notes
- |-
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | Feature Flags（功能标志）
  | rowspan="1"| ''protocol:''<br/><code>0x0C</code><br/><br/>''resource:''<br/><code>update_enabled_features</code>
  | rowspan="1"| Configuration
  | rowspan="1"| Client
  | Feature Flags
- | {{Type|Prefixed Array}} of {{Type|Identifier}}
- |
+有一个特殊的功能标志，在大多数版本中都存在：
+* minecraft:vanilla - 启用原版功能
  |}
-
+对于其他功能标志，它们可能在版本之间发生变化，请参见[[Experiments#Java_Edition]]。
 There is one special feature flag, which is in most versions:
-* minecraft:vanilla - enables vanilla features
+==== 更新标签（配置） ====
 
 For the other feature flags, which may change between versions, see [[Experiments#Java_Edition]].
-
-==== Update Tags (configuration) ====
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
- | rowspan="2"| ''protocol:''<br/><code>0x0D</code><br/><br/>''resource:''<br/><code>update_tags</code>
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Array of tags（标签数组）
+  | Registry（注册表）
  | rowspan="2"| Configuration
  | rowspan="2"| Client
- | rowspan="2"| Array of tags
+  | 注册表标识符（原版期望<code>minecraft:block</code>、<code>minecraft:item</code>、<code>minecraft:fluid</code>、<code>minecraft:entity_type</code>和<code>minecraft:game_event</code>的标签）
  | Registry
- | rowspan="2"| {{Type|Prefixed Array}}
- | {{Type|Identifier}}
+  | Array of Tag（标签数组）
+  | （见下文）
  | Registry identifier (Vanilla expects tags for the registries <code>minecraft:block</code>, <code>minecraft:item</code>, <code>minecraft:fluid</code>, <code>minecraft:entity_type</code>, and <code>minecraft:game_event</code>)
  |-
  | Array of Tag
- | (See below)
+标签数组看起来像这样：
  |
  |}
-
-Tag arrays look like:
-
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
 {| class="wikitable"
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
+  | rowspan="2"| Tags（标签）
+  | Tag name（标签名称）
  ! Notes
  |-
  | rowspan="2"| Tags
  | Tag name
- | rowspan="2"| {{Type|Prefixed Array}}
+  | Entries（条目）
  | {{Type|Identifier}}
- |
+  | 给定类型（方块、物品等）的数字ID。此列表替换给定标签的先前ID列表。如果一些预先存在的标签未被提及，将打印警告。
  |-
  | Entries
- | {{Type|Prefixed Array}} of {{Type|VarInt}}
+有关更多信息，包括原版标签列表，请参见Minecraft Wiki上的[[Tag|标签]]。
  | Numeric IDs of the given type (block, item, etc.). This list replaces the previous list of IDs for the given tag. If some preexisting tags are left unmentioned, a warning is printed.
- |}
+==== 客户端绑定已知包 ====
 
-See [[Tag]] on the Minecraft Wiki for more information, including a list of vanilla tags.
+通知客户端服务器上存在哪些数据包。
+客户端应使用自己的[[#Serverbound_Known_Packs|服务器绑定已知包]]数据包进行响应。
+原版服务器在收到响应之前不会继续配置。
 
-==== Clientbound Known Packs ====
-
-Informs the client of which data packs are present on the server.
+原版客户端需要版本为<code>1.21.8</code>的<code>minecraft:core</code>包才能进行正常的登录序列。此数据包必须在注册表数据包之前发送。
 The client is expected to respond with its own [[#Serverbound_Known_Packs|Serverbound Known Packs]] packet.
 The vanilla server does not continue with Configuration until it receives a response.
-
-The vanilla client requires the <code>minecraft:core</code> pack with version <code>1.21.8</code> for a normal login sequence. This packet must be sent before the Registry Data packets.
-
-{| class="wikitable"
- ! Packet ID
- ! State
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Bound To
  ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
- |-
- | rowspan="3"| ''protocol:''<br/><code>0x0E</code><br/><br/>''resource:''<br/><code>select_known_packs</code>
+  | rowspan="3"| 配置
+  | rowspan="3"| 客户端
+  | rowspan="3"| Known Packs（已知包）
+  | Namespace（命名空间）
  | rowspan="3"| Configuration
  | rowspan="3"| Client
  | rowspan="3"| Known Packs
  | Namespace
- | rowspan="3"| {{Type|Prefixed Array}}
+  | ID（标识符）
  | {{Type|String}} (32767)
- |
+  | Version（版本）
  |-
  | ID
  | {{Type|String}} (32767)
  |
- |-
+==== 自定义报告详情（配置） ====
  | Version
- | {{Type|String}} (32767)
+包含在连接到服务器期间生成的任何崩溃或断开连接报告中包含的键值文本条目列表。
  |
  |}
-
-==== Custom Report Details (configuration) ====
-
-Contains a list of key-value text entries that are included in any crash or disconnection report generated during connection to the server.
-
-{| class="wikitable"
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Packet ID
  ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Details（详情）
+  | Title（标题）
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x0F</code><br/><br/>''resource:''<br/><code>custom_report_details</code>
  | rowspan="2"| Configuration
  | rowspan="2"| Client
- | rowspan="2"| Details
+  | Description（描述）
  | Title
  | rowspan="2"| {{Type|Prefixed Array}} (32)
  | {{Type|String}} (128)
  |
- |-
+==== 服务器链接（配置） ====
  | Description
- | {{Type|String}} (4096)
+此数据包包含原版客户端将在暂停菜单中显示的链接列表。链接标签可以是内置的或自定义的（即任何文本）。
  |
 |}
-
-==== Server Links (configuration) ====
-
-This packet contains a list of links that the vanilla client will display in the menu available from the pause menu. Link labels can be built-in or custom (i.e., any text).
-
-{| class="wikitable"
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Packet ID
  ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | rowspan="2"| Links（链接）
+  | Label（标签）
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x10</code><br/><br/>''resource:''<br/><code>server_links</code>
- | rowspan="2"| Configuration
+  | 内置标签使用枚举（见下文），自定义标签使用文本组件。
  | rowspan="2"| Client
- | rowspan="2"| Links
+  | URL（网址）
  | Label
- | rowspan="2"| {{Type|Prefixed Array}}
+  | 有效的URL。
  | {{Type|VarInt}} {{Type|Enum}} {{Type|or}} {{Type|Text Component}}
  | Enums are used for built-in labels (see below), and text components for custom labels.
  |-
  | URL
- | {{Type|String}}
- | Valid URL.
-|}
+  ! ID（标识符）
+  ! 名称
+  ! 备注
 
 
-{| class="wikitable"
- ! ID
+  | Bug Report（错误报告）
+  | 显示在连接错误屏幕上；作为注释包含在断开连接报告中。
  ! Name
  ! Notes
- |-
+  | Community Guidelines（社区准则）
  | 0
  | Bug Report
- | Displayed on connection error screen; included as a comment in the disconnection report.
+  | Support（支持）
  |-
  | 1
- | Community Guidelines
+  | Status（状态）
  | 
  |-
- | 2
+  | Feedback（反馈）
  | Support
  | 
- |-
+  | Community（社区）
  | 3
  | Status
- | 
+  | Website（网站）
  |-
  | 4
- | Feedback
+  | Forums（论坛）
  | 
  |-
- | 5
+  | News（新闻）
  | Community
  | 
- |-
+  | Announcements（公告）
  | 6
  | Website
  | 
- |-
+==== 清除对话框（配置） ====
  | 7
- | Forums
+如果我们当前处于对话框屏幕中，则删除当前屏幕并切换回上一个屏幕。
  | 
  |-
- | 8
- | News
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | 
  |-
- | 9
- | Announcements
- | 
- |-
- |}
-
-==== Clear Dialog (configuration) ====
+  | 配置
+  | 客户端
+  | colspan="3"| 无字段
 
 If we're currently in a dialog screen, then this removes the current screen and switches back to the previous one.
-
+==== 显示对话框（配置） ====
 {| class="wikitable"
- ! Packet ID
+向客户端显示自定义对话框屏幕。
  ! State
  ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
- | ''protocol:''<br/><code>0x11</code><br/><br/>''resource:''<br/><code>clear_dialog</code>
- | Configuration
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | Client
  | colspan="3"| ''no fields''
- |}
+  | 配置
+  | 客户端
+  | Dialog（对话框）
 
-==== Show Dialog (configuration) ====
-
-Show a custom dialog screen to the client.
-
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
- | ''protocol:''<br/><code>0x12</code><br/><br/>''resource:''<br/><code>show_dialog</code>
- | Configuration
- | Client
- | Dialog
- | {{Type|NBT}}
- | Inline definition as described at [[Java_Edition_protocol/Registry_data#Dialog|Registry_data#Dialog]].
- |}
-
-=== Serverbound ===
-
-==== Client Information (configuration) ====
-
-Sent when the player connects, or when settings are changed.
+  | 如[[Java_Edition_protocol/Registry_data#Dialog|Registry_data#Dialog]]中所述的内联定义。
 
 {| class="wikitable"
- ! Packet ID
+=== 服务器绑定 ===
  ! State
- ! Bound To
+==== 客户端信息（配置） ====
  ! Field Name
- ! Field Type
+当玩家连接或更改设置时发送。
  ! Notes
  |-
- | rowspan="9"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>client_information</code>
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
+ |}
+
+  | rowspan="9"| 配置
+  | rowspan="9"| 服务器
+  | Locale（区域设置）
+
+  | 例如<code>en_GB</code>。
+
+  | View Distance（视距）
+ ! Packet ID
+  | 客户端渲染距离，以区块为单位。
+ ! Bound To
+  | Chat Mode（聊天模式）
+ ! Field Type
+  | 0：启用，1：仅命令，2：隐藏。有关更多信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Chat#Client chat mode|聊天#客户端聊天模式]]。
+ |-
+  | Chat Colors（聊天颜色）
  | rowspan="9"| Configuration
- | rowspan="9"| Server
+  | "颜色"多人游戏设置。原版服务器存储此值但不对其执行任何操作（参见{{bug|MC-64867}}）。当它为false时，一些第三方服务器会禁用聊天和系统消息中的所有着色。
  | Locale
- | {{Type|String}} (16)
+  | Displayed Skin Parts（显示的皮肤部分）
  | e.g. <code>en_GB</code>.
- |-
+  | 位掩码，见下文。
  | View Distance
- | {{Type|Byte}}
+  | Main Hand（主手）
  | Client-side render distance, in chunks.
- |-
+  | 0：左手，1：右手。
  | Chat Mode
- | {{Type|VarInt}} {{Type|Enum}}
+  | Enable text filtering（启用文本过滤）
  | 0: enabled, 1: commands only, 2: hidden.  See [[Minecraft Wiki:Projects/wiki.vg merge/Chat#Client chat mode|Chat#Client chat mode]] for more information.
- |-
+  | 启用告示牌和成书标题上的文本过滤。原版客户端根据[[Minecraft Wiki:Projects/wiki.vg merge/Mojang API#Player Attributes|<code>/player/attributes</code> Mojang API端点]]指示的<code>profanityFilterPreferences.profanityFilterOn</code>账户属性设置此项。在离线模式下，它始终为false。
  | Chat Colors
- | {{Type|Boolean}}
+  | Allow server listings（允许服务器列表）
  | “Colors” multiplayer setting. The vanilla server stores this value but does nothing with it (see {{bug|MC-64867}}). Some third-party servers disable all coloring in chat and system messages when it is false.
- |-
+  | 服务器通常列出在线玩家；此选项应让您不出现在该列表中。
  | Displayed Skin Parts
- | {{Type|Unsigned Byte}}
+  | Particle Status（粒子状态）
  | Bit mask, see below.
- |-
+  | 0：全部，1：减少，2：最少
  | Main Hand
  | {{Type|VarInt}} {{Type|Enum}}
- | 0: Left, 1: Right.
+显示的皮肤部分标志：
  |-
- | Enable text filtering
- | {{Type|Boolean}}
- | Enables filtering of text on signs and written book titles. The vanilla client sets this according to the <code>profanityFilterPreferences.profanityFilterOn</code> account attribute indicated by the [[Minecraft Wiki:Projects/wiki.vg merge/Mojang API#Player Attributes|<code>/player/attributes</code> Mojang API endpoint]]. In offline mode, it is always false.
+* 位0（0x01）：披风启用
+* 位1（0x02）：外套启用
+* 位2（0x04）：左袖启用
+* 位3（0x08）：右袖启用
+* 位4（0x10）：左裤腿启用
+* 位5（0x20）：右裤腿启用
+* 位6（0x40）：帽子启用
  |-
- | Allow server listings
- | {{Type|Boolean}}
- | Servers usually list online players; this option should let you not show up in that list.
- |-
- | Particle Status
+最高有效位（位7，0x80）似乎未使用。
  | {{Type|VarInt}} {{Type|Enum}}
- | 0: all, 1: decreased, 2: minimal
+==== Cookie响应（配置） ====
  |}
-
+对来自服务器的[[#Cookie_Request_(configuration)|Cookie请求（配置）]]的响应。原版服务器只接受最大5 kiB大小的响应。
 ''Displayed Skin Parts'' flags:
 
-* Bit 0 (0x01): Cape enabled
-* Bit 1 (0x02): Jacket enabled
-* Bit 2 (0x04): Left Sleeve enabled
-* Bit 3 (0x08): Right Sleeve enabled
-* Bit 4 (0x10): Left Pants Leg enabled
-* Bit 5 (0x20): Right Pants Leg enabled
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
 * Bit 6 (0x40): Hat enabled
 
-The most significant bit (bit 7, 0x80) appears to be unused.
+  | rowspan="2"| 配置
+  | rowspan="2"| 服务器
+  | Key（键）
 
-==== Cookie Response (configuration) ====
+  | cookie的标识符。
 
-Response to a [[#Cookie_Request_(configuration)|Cookie Request (configuration)]] from the server. The vanilla server only accepts responses of up to 5 kiB in size.
-
-{| class="wikitable"
+  | Payload（有效负载）
  ! Packet ID
- ! State
+  | cookie的数据。
  ! Bound To
  ! Field Name
- ! Field Type
+==== 服务器绑定插件消息（配置） ====
  ! Notes
- |-
+{{Main|Minecraft Wiki:Projects/wiki.vg merge/Plugin channels}}
  | rowspan="2"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>cookie_response</code>
- | rowspan="2"| Configuration
+模组和插件可以使用此功能发送他们的数据。Minecraft本身使用一些[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]。这些内部频道位于<code>minecraft</code>命名空间中。
  | rowspan="2"| Server
- | Key
+有关此内容的更多文档：[https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/]
  | {{Type|Identifier}}
- | The identifier of the cookie.
+请注意，数据的长度仅从数据包长度已知，因为数据包没有任何类型的长度字段。
  |-
  | Payload
  | {{Type|Prefixed Optional}} {{Type|Prefixed Array}} (5120) of {{Type|Byte}}
