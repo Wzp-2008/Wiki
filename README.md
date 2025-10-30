@@ -248,161 +248,161 @@ See [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#1.6|Server List Pin
  | Should match the one sent by the client.
   | 应与客户端发送的时间戳匹配。
 
-=== Serverbound ===
+=== 服务器绑定 ===
 
-==== Status Request ====
+==== 状态请求 ====
 
-The status can only be requested once, immediately after the handshake, before any ping. The server won't respond otherwise.
+状态只能在握手后立即请求一次，在任何ping之前。否则服务器不会响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>status_request</code>
- | Status
- | Server
- | colspan="3"| ''no fields''
+  | 状态
+  | 服务器
+  | colspan="3"| 无字段
  |}
 
-==== Ping Request (status) ====
+==== Ping请求（状态） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>ping_request</code>
- | Status
- | Server
- | Timestamp
+  | 状态
+  | 服务器
+  | Timestamp（时间戳）
  | {{Type|Long}}
- | May be any number, but vanilla clients will always use the timestamp in milliseconds.
+  | 可以是任何数字，但原版客户端将始终使用以毫秒为单位的时间戳。
  |}
 
-== Login ==
+== 登录 ==
 
-The login process is as follows:
+登录过程如下：
 
-# C→S: [[#Handshake|Handshake]] with intent set to 2 (login)
-# C→S: [[#Login Start|Login Start]]
-# S→C: [[#Encryption Request|Encryption Request]]
-# Client auth (if enabled)
-# C→S: [[#Encryption Response|Encryption Response]]
-# Server auth (if enabled)
-# Both enable encryption
-# S→C: [[#Set Compression|Set Compression]] (optional)
-# S→C: [[#Login Success|Login Success]]
-# C→S: [[#Login Acknowledged|Login Acknowledged]]
+# C→S：[[#Handshake|握手]]，意图设置为2（登录）
+# C→S：[[#Login Start|登录开始]]
+# S→C：[[#Encryption Request|加密请求]]
+# 客户端认证（如果启用）
+# C→S：[[#Encryption Response|加密响应]]
+# 服务器认证（如果启用）
+# 双方启用加密
+# S→C：[[#Set Compression|设置压缩]]（可选）
+# S→C：[[#Login Success|登录成功]]
+# C→S：[[#Login Acknowledged|登录确认]]
 
-Set Compression, if present, must be sent before Login Success. Note that anything sent after Set Compression must use the [[#With compression|Post Compression packet format]].
+如果存在设置压缩，必须在登录成功之前发送。请注意，设置压缩后发送的任何内容都必须使用[[#With compression|压缩后数据包格式]]。
 
-Three modes of operation are possible depending on how the packets are sent:
-* Online-mode with encryption
-* Offline-mode with encryption
-* Offline-mode without encryption
+根据数据包的发送方式，可能有三种操作模式：
+* 在线模式（带加密）
+* 离线模式（带加密）
+* 离线模式（不带加密）
 
-For online-mode servers (the ones with authentication enabled), encryption is always mandatory, and the entire process described above needs to be followed.
+对于在线模式服务器（启用了身份验证的服务器），加密始终是强制性的，并且需要遵循上述整个过程。
 
-For offline-mode servers (the ones with authentication disabled), encryption is optional, and part of the process can be skipped. In that case, [[#Login Start|Login Start]] is directly followed by [[#Login Success|Login Success]]. The vanilla server only uses UUID v3 for offline player UUIDs, deriving it from the string <code>OfflinePlayer:<player's name></code>. For example, Notch’s offline UUID would be chosen from the string <code>OfflinePlayer:Notch</code>. This is not a requirement however, the UUID can be set to anything.
+对于离线模式服务器（禁用了身份验证的服务器），加密是可选的，可以跳过部分过程。在这种情况下，[[#Login Start|登录开始]]直接跟随[[#Login Success|登录成功]]。原版服务器仅对离线玩家UUID使用UUID v3，从字符串<code>OfflinePlayer:<player's name></code>派生它。例如，Notch的离线UUID将从字符串<code>OfflinePlayer:Notch</code>中选择。但这不是必需的，UUID可以设置为任何值。
 
-As of 1.21, the vanilla server never uses encryption in offline mode.
+自1.21起，原版服务器在离线模式下从不使用加密。
 
-See [[protocol encryption]] for details.
+有关详细信息，请参见[[protocol encryption|协议加密]]。
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-==== Disconnect (login) ====
+==== 断开连接（登录） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>login_disconnect</code>
- | Login
- | Client
- | Reason
+  | 登录
+  | 客户端
+  | Reason（原因）
  | {{Type|JSON Text Component}}
- | The reason why the player was disconnected.
+  | 玩家被断开连接的原因。
  |}
 
-==== Encryption Request ====
+==== 加密请求 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="4"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>hello</code>
- | rowspan="4"| Login
- | rowspan="4"| Client
- | Server ID
+  | rowspan="4"| 登录
+  | rowspan="4"| 客户端
+  | Server ID（服务器ID）
  | {{Type|String}} (20)
- | Always empty when sent by the vanilla server.
+  | 由原版服务器发送时始终为空。
  |-
- | Public Key
+  | Public Key（公钥）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | The server's public key, in bytes.
+  | 服务器的公钥，以字节为单位。
  |-
- | Verify Token
+  | Verify Token（验证令牌）
  | {{Type|Prefixed Array}} of {{Type|Byte}}
- | A sequence of random bytes generated by the server.
+  | 由服务器生成的随机字节序列。
  |-
- | Should authenticate
+  | Should authenticate（应该认证）
  | {{Type|Boolean}}
- | Whether the client should attempt to [[Minecraft Wiki:Projects/wiki.vg merge/Protocol_Encryption#Authentication|authenticate through mojang servers]].
+  | 客户端是否应尝试[[Minecraft Wiki:Projects/wiki.vg merge/Protocol_Encryption#Authentication|通过mojang服务器进行身份验证]]。
  |}
 
-See [[protocol encryption]] for details.
+有关详细信息，请参见[[protocol encryption|协议加密]]。
 
-==== Login Success ====
+==== 登录成功 ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x02</code><br/><br/>''resource:''<br/><code>login_finished</code>
- | rowspan="1"| Login
- | rowspan="1"| Client
- | Profile
+  | rowspan="1"| 登录
+  | rowspan="1"| 客户端
+  | Profile（档案）
  | {{Type|Game Profile}}
  | 
  |}
-
+==== 设置压缩 ====
 ==== Set Compression ====
-
+启用压缩。如果启用压缩，所有后续数据包都将以[[#With compression|压缩数据包格式]]编码。负值将禁用压缩，这意味着数据包格式应保持在[[#Without compression|未压缩数据包格式]]。但是，此数据包是完全可选的，如果不发送，压缩也不会启用（当禁用压缩时，原版服务器不会发送数据包）。
 Enables compression.  If compression is enabled, all following packets are encoded in the [[#With compression|compressed packet format]].  Negative values will disable compression, meaning the packet format should remain in the [[#Without compression|uncompressed packet format]].  However, this packet is entirely optional, and if not sent, compression will also not be enabled (the vanilla server does not send the packet when compression is disabled).
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | ''protocol:''<br/><code>0x03</code><br/><br/>''resource:''<br/><code>login_compression</code>
- | Login
- | Client
+  | 登录
+  | 客户端
+  | Threshold（阈值）
  | Threshold
- | {{Type|VarInt}}
+  | 数据包在压缩之前的最大大小。
  | Maximum size of a packet before it is compressed.
  |}
 
