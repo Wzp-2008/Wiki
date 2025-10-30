@@ -138,115 +138,115 @@ Minecraft有一个统一的注册表系统，用于实现大多数注册表，�
 
 原版服务器（但不是客户端）拒绝小于阈值的压缩数据包。但是，超过阈值的未压缩数据包被接受。
 
-Compression can be disabled by sending the packet [[#Set Compression|Set Compression]] with a negative Threshold, or not sending the Set Compression packet at all.
+可以通过发送具有负阈值的[[#Set Compression|设置压缩]]数据包或根本不发送设置压缩数据包来禁用压缩。
 
-== Handshaking ==
+== 握手 ==
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-There are no clientbound packets in the Handshaking state, since the protocol immediately switches to a different state after the client sends the first packet.
+在握手状态下没有客户端绑定数据包，因为协议在客户端发送第一个数据包后立即切换到不同的状态。
 
-=== Serverbound ===
+=== 服务器绑定 ===
 
-==== Handshake ====
+==== 握手 ====
 
-This packet causes the server to switch into the target state. It should be sent right after opening the TCP connection to prevent the server from disconnecting.
+此数据包使服务器切换到目标状态。它应在打开TCP连接后立即发送，以防止服务器断开连接。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="4"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>intention</code>
  | rowspan="4"| Handshaking
- | rowspan="4"| Server
- | Protocol Version
- | {{Type|VarInt}}
+  | rowspan="4"| 握手
+  | rowspan="4"| 服务器
+  | Protocol Version（协议版本）
  | See [[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|protocol version numbers]] (currently 772 in Minecraft 1.21.8).
- |-
+  | 参见[[Minecraft Wiki:Projects/wiki.vg merge/Protocol version numbers|协议版本号]]（当前在Minecraft 1.21.8中为772）。
  | Server Address
- | {{Type|String}} (255)
+  | Server Address（服务器地址）
  | Hostname or IP, e.g. localhost or 127.0.0.1, that was used to connect. The vanilla server does not use this information. Note that SRV records are a simple redirect, e.g. if _minecraft._tcp.example.com points to mc.example.org, users connecting to example.com will provide example.org as the server address in addition to connecting to it.
- |-
+  | 主机名或IP，例如localhost或127.0.0.1，用于连接。原版服务器不使用此信息。请注意，SRV记录是简单的重定向，例如，如果_minecraft._tcp.example.com指向mc.example.org，连接到example.com的用户将在连接到它的同时提供example.org作为服务器地址。
  | Server Port
- | {{Type|Unsigned Short}}
+  | Server Port（服务器端口）
  | Default is 25565. The vanilla server does not use this information.
- |-
+  | 默认为25565。原版服务器不使用此信息。
  | Intent
- | {{Type|VarInt}} {{Type|Enum}}
+  | Intent（意图）
  | 1 for [[#Status|Status]], 2 for [[#Login|Login]], 3 for [[#Login|Transfer]].
- |}
+  | 1表示[[#Status|状态]]，2表示[[#Login|登录]]，3表示[[#Login|转移]]。
 
 ==== Legacy Server List Ping ====
-
+==== 旧版服务器列表Ping ====
 {{Warning|This packet uses a nonstandard format. It is never length-prefixed, and the packet ID is an {{Type|Unsigned Byte}} instead of a {{Type|VarInt}}.}}
-
+{{Warning|此数据包使用非标准格式。它从不带长度前缀，数据包ID是{{Type|Unsigned Byte}}而不是{{Type|VarInt}}。}}
 While not technically part of the current protocol, (legacy) clients may send this packet to initiate [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping|Server List Ping]], and modern servers should handle it correctly.
-The format of this packet is a remnant of the pre-Netty age, before the switch to Netty in 1.7 brought the standard format that is recognized now. This packet merely exists to inform legacy clients that they can't join our modern server.
-
+虽然在技术上不是当前协议的一部分，（旧版）客户端可能会发送此数据包以启动[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping|服务器列表Ping]]，现代服务器应正确处理它。
+此数据包的格式是pre-Netty时代的遗留物，在1.7切换到Netty之前，它带来了现在识别的标准格式。此数据包仅用于通知旧版客户端他们无法加入我们的现代服务器。
 Modern clients (tested with 1.21.5 + 1.21.4) also send this packet when the server does not send any response within a 30 seconds time window or when the connection is immediately closed.
-{{Warning|The client does not close the connection with the legacy packet on its own!
-It only gets closed when the Minecraft client is closed.}}
-{| class="wikitable"
+现代客户端（使用1.21.5 + 1.21.4测试）也会在服务器在30秒时间窗口内未发送任何响应或连接立即关闭时发送此数据包。
+{{Warning|客户端不会自行使用旧版数据包关闭连接！
+只有在Minecraft客户端关闭时才会关闭。}}
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | 0xFE
  | Handshaking
- | Server
- | Payload
- | {{Type|Unsigned Byte}}
+  | 握手
+  | 服务器
+  | Payload（有效负载）
  | always 1 (<code>0x01</code>).
- |}
+  | 总是1（<code>0x01</code>）。
 
 See [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#1.6|Server List Ping#1.6]] for the details of the protocol that follows this packet.
-== Status ==
+参见[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#1.6|服务器列表Ping#1.6]]以获取此数据包后续协议的详细信息。
+== 状态 ==
 {{Main|Minecraft Wiki:Projects/wiki.vg merge/Server List Ping}}
-
 === Clientbound ===
-
+=== 客户端绑定 ===
 ==== Status Response ====
-
+==== 状态响应 ====
 {| class="wikitable"
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>status_response</code>
  | Status
- | Client
- | JSON Response
- | {{Type|String}} (32767)
+  | 状态
+  | 客户端
+  | JSON Response（JSON响应）
  | See [[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#Status Response|Server List Ping#Status Response]]; as with all strings, this is prefixed by its length as a {{Type|VarInt}}.
- |}
+  | 参见[[Minecraft Wiki:Projects/wiki.vg merge/Server List Ping#Status Response|服务器列表Ping#状态响应]]；与所有字符串一样，它的长度作为{{Type|VarInt}}前缀。
 
 ==== Pong Response (status) ====
-
+==== Pong响应（状态） ====
 {| class="wikitable"
  ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
- |-
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  | ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>pong_response</code>
  | Status
- | Client
- | Timestamp
- | {{Type|Long}}
+  | 状态
+  | 客户端
+  | Timestamp（时间戳）
  | Should match the one sent by the client.
- |}
+  | 应与客户端发送的时间戳匹配。
 
 === Serverbound ===
 
