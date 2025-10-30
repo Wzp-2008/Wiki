@@ -570,183 +570,183 @@ Requests a cookie that was previously stored.
   | cookie的数据。
  |}
 
-== Configuration ==
+== 配置 ==
 
-=== Clientbound ===
+=== 客户端绑定 ===
 
-==== Cookie Request (configuration) ====
+==== Cookie请求（配置） ====
 
-Requests a cookie that was previously stored.
+请求之前存储的cookie。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x00</code><br/><br/>''resource:''<br/><code>cookie_request</code>
- | rowspan="1"| Configuration
- | rowspan="1"| Client
- | colspan="2"| Key
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | colspan="2"| Key（键）
  | colspan="2"| {{Type|Identifier}}
- | The identifier of the cookie.
+  | cookie的标识符。
  |}
 
-==== Clientbound Plugin Message (configuration) ====
+==== 客户端绑定插件消息（配置） ====
 
 {{Main|Minecraft Wiki:Projects/wiki.vg merge/Plugin channels}}
 
-Mods and plugins can use this to send their data. Minecraft itself uses several [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|plugin channels]]. These internal channels are in the <code>minecraft</code> namespace.
+模组和插件可以使用此功能发送他们的数据。Minecraft本身使用多个[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]。这些内部频道位于<code>minecraft</code>命名空间中。
 
-More information on how it works on [https://web.archive.org/web/20220831140929/https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ Dinnerbone's blog]. More documentation about internal and popular registered channels are [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|here]].
+有关其工作原理的更多信息，请访问[https://web.archive.org/web/20220831140929/https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/ Dinnerbone的博客]。有关内部和流行注册频道的更多文档在[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|这里]]。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="2"| ''protocol:''<br/><code>0x01</code><br/><br/>''resource:''<br/><code>custom_payload</code>
- | rowspan="2"| Configuration
- | rowspan="2"| Client
- | Channel
+  | rowspan="2"| 配置
+  | rowspan="2"| 客户端
+  | Channel（频道）
  | {{Type|Identifier}}
- | Name of the [[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|plugin channel]] used to send the data.
+  | 用于发送数据的[[Minecraft Wiki:Projects/wiki.vg merge/Plugin channels|插件频道]]的名称。
  |-
- | Data
+  | Data（数据）
  | {{Type|Byte Array}} (1048576)
- | Any data. The length of this array must be inferred from the packet length.
+  | 任何数据。此数组的长度必须从数据包长度推断。
  |}
 
-In vanilla clients, the maximum data length is 1048576 bytes.
+在原版客户端中，最大数据长度为1048576字节。
 
-==== Disconnect (configuration) ====
+==== 断开连接（配置） ====
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x02</code><br/><br/>''resource:''<br/><code>disconnect</code>
- | Configuration 
- | Client
- | Reason
+  | 配置
+  | 客户端
+  | Reason（原因）
  | {{Type|Text Component}}
- | The reason why the player was disconnected.
+  | 玩家被断开连接的原因。
  |}
 
-==== Finish Configuration ====
+==== 完成配置 ====
 
-Sent by the server to notify the client that the configuration process has finished. The client answers with [[#Acknowledge_Finish_Configuration|Acknowledge Finish Configuration]] whenever it is ready to continue.
+由服务器发送以通知客户端配置过程已完成。客户端在准备好继续时使用[[#Acknowledge_Finish_Configuration|确认完成配置]]进行响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | rowspan="1"| ''protocol:''<br/><code>0x03</code><br/><br/>''resource:''<br/><code>finish_configuration</code>
- | rowspan="1"| Configuration
- | rowspan="1"| Client
- | colspan="3"| ''no fields''
+  | rowspan="1"| 配置
+  | rowspan="1"| 客户端
+  | colspan="3"| 无字段
  |}
 
-This packet switches the connection state to [[#Play|play]].
+此数据包将连接状态切换到[[#Play|游戏]]。
 
-==== Clientbound Keep Alive (configuration) ====
+==== 客户端绑定保持活动（配置） ====
 
-The server will frequently send out a keep-alive, each containing a random ID. The client must respond with the same payload (see [[#Serverbound Keep Alive (configuration)|Serverbound Keep Alive]]). If the client does not respond to a Keep Alive packet within 15 seconds after it was sent, the server kicks the client. Vice versa, if the server does not send any keep-alives for 20 seconds, the client will disconnect and yield a "Timed out" exception.
+服务器将频繁发送保持活动，每个都包含一个随机ID。客户端必须使用相同的有效负载响应（参见[[#Serverbound Keep Alive (configuration)|服务器绑定保持活动]]）。如果客户端在发送后15秒内没有响应保持活动数据包，服务器会踢出客户端。反之亦然，如果服务器在20秒内没有发送任何保持活动，客户端将断开连接并产生"超时"异常。
 
-The vanilla server uses a system-dependent time in milliseconds to generate the keep alive ID value.
+原版服务器使用系统相关的毫秒时间来生成保持活动ID值。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x04</code><br/><br/>''resource:''<br/><code>keep_alive</code>
- | Configuration
- | Client
- | Keep Alive ID
+  | 配置
+  | 客户端
+  | Keep Alive ID（保持活动ID）
  | {{Type|Long}}
  |
  |}
 
-==== Ping (configuration) ====
+==== Ping（配置） ====
 
-Packet is not used by the vanilla server. When sent to the client, the client responds with a [[#Pong (configuration)|Pong]] packet with the same ID.
+原版服务器不使用此数据包。当发送给客户端时，客户端使用具有相同ID的[[#Pong (configuration)|Pong]]数据包进行响应。
 
 {| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
- ! Notes
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  |-
  | ''protocol:''<br/><code>0x05</code><br/><br/>''resource:''<br/><code>ping</code>
- | Configuration
- | Client
+  | 配置
+  | 客户端
  | ID
  | {{Type|Int}}
  |
  |}
-
+==== 重置聊天 ====
 ==== Reset Chat ====
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! Field Name
- ! Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! 字段名
+  ! 字段类型
+  ! 备注
  ! Notes
  |-
- | ''protocol:''<br/><code>0x06</code><br/><br/>''resource:''<br/><code>reset_chat</code>
- | Configuration
- | Client
+  | 配置
+  | 客户端
+  | colspan="3"| 无字段
  | colspan="3"| ''no fields''
  |}
-
+==== 注册表数据 ====
 ==== Registry Data ====
-
+表示从服务器发送并应用于客户端的某些注册表。
 Represents certain registries that are sent from the server and are applied on the client.
-
+有关详细信息，请参见[[Minecraft Wiki:Projects/wiki.vg merge/Registry_Data|注册表数据]]。
 See [[Minecraft Wiki:Projects/wiki.vg merge/Registry_Data|Registry Data]] for details.
 
-{| class="wikitable"
- ! Packet ID
- ! State
- ! Bound To
- ! colspan="2"| Field Name
- ! colspan="2"| Field Type
+  ! 数据包ID
+  ! 状态
+  ! 绑定到
+  ! colspan="2"| 字段名
+  ! colspan="2"| 字段类型
+  ! 备注
  ! Notes
  |-
- | rowspan="3"| ''protocol:''<br/><code>0x07</code><br/><br/>''resource:''<br/><code>registry_data</code>
- | rowspan="3"| Configuration
- | rowspan="3"| Client
+  | rowspan="3"| 配置
+  | rowspan="3"| 客户端
+  | colspan="2"| Registry ID（注册表ID）
  | colspan="2"| Registry ID
  | colspan="2"| {{Type|Identifier}}
  | 
- |-
- | rowspan="2"| Entries
+  | rowspan="2"| Entries（条目）
+  | Entry ID（条目ID）
  | Entry ID
  | rowspan="2"| {{Type|Prefixed Array}}
  | {{Type|Identifier}}
  |
- |-
+  | Data（数据）
  | Data
  | {{Type|Prefixed Optional}} {{Type|NBT}}
  | Entry data.
