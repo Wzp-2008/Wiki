@@ -977,6 +977,118 @@ Boss栏动作：
 | 附魔台 Enchantment Table | 4：鼠标悬停在顶部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over top enchantment slot | 附魔ID（设置为-1隐藏它），见下文的值 The enchantment ID (set to -1 to hide it) |
 | 附魔台 Enchantment Table | 5：鼠标悬停在中部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over middle enchantment slot | 附魔ID（设置为-1隐藏它） The enchantment ID (set to -1 to hide it) |
 | 附魔台 Enchantment Table | 6：鼠标悬停在底部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over bottom enchantment slot | 附魔ID（设置为-1隐藏它） The enchantment ID (set to -1 to hide it) |
+| 附魔台 Enchantment Table | 7：鼠标悬停在顶部槽上显示的附魔等级 Enchantment level shown on mouse hover over the top slot | 附魔等级（1=I，2=II，6=VI等），如果没有附魔则为-1 The enchantment level (1 = I, 2 = II, 6 = VI, etc.), or -1 if no enchant |
+| 附魔台 Enchantment Table | 8：鼠标悬停在中部槽上显示的附魔等级 Enchantment level shown on mouse hover over the middle slot | 附魔等级（1=I，2=II，6=VI等），如果没有附魔则为-1 |
+| 附魔台 Enchantment Table | 9：鼠标悬停在底部槽上显示的附魔等级 Enchantment level shown on mouse hover over the bottom slot | 附魔等级（1=I，2=II，6=VI等），如果没有附魔则为-1 |
+| 信标 Beacon | 0：能量等级 Power level | 0-4，控制启用哪些效果按钮 |
+| 信标 Beacon | 1：第一个药水效果 First potion effect | 第一个效果的药水效果ID Potion effect ID，如果没有效果则为-1 |
+| 信标 Beacon | 2：第二个药水效果 Second potion effect | 第二个效果的药水效果ID Potion effect ID，如果没有效果则为-1 |
+| 铁砧 Anvil | 0：修复成本 Repair cost | 以经验等级为单位的修复成本 The repair's cost in XP levels |
+| 酿造台 Brewing Stand | 0：酿造时间 Brew time | 0-400，400使箭头为空，0使箭头为满 |
+| 酿造台 Brewing Stand | 1：燃料时间 Fuel time | 0-20，0使箭头为空，20使箭头为满 |
+| 切石机 Stonecutter | 0：选定的配方 Selected recipe | 选定配方的索引。-1表示未选择。 |
+| 织布机 Loom | 0：选定的图案 Selected pattern | 选定图案的索引。0表示未选择，0也是"基础"图案的内部ID。 |
+| 讲台 Lectern | 0：页码 Page number | 当前页码，从0开始。 |
+| 锻造台 Smithing Table | 0：有配方错误 Has recipe error | 如果大于零则为真 True if greater than zero。 |
+
+对于附魔台，使用以下数字ID：
+
+| 数字ID Numerical ID | 附魔ID Enchantment ID | 附魔名称 Enchantment Name |
+|------|------|------|
+| 0 | minecraft:protection | 保护 Protection |
+| 1 | minecraft:fire_protection | 火焰保护 Fire Protection |
+| 2 | minecraft:feather_falling | 摔落保护 Feather Falling |
+| 3 | minecraft:blast_protection | 爆炸保护 Blast Protection |
+| 4 | minecraft:projectile_protection | 弹射物保护 Projectile Protection |
+| 5 | minecraft:respiration | 水下呼吸 Respiration |
+| 6 | minecraft:aqua_affinity | 水下速掘 Aqua Affinity |
+| 7 | minecraft:thorns | 荆棘 Thorns |
+| 8 | minecraft:depth_strider | 深海探索者 Depth Strider |
+| 9 | minecraft:frost_walker | 冰霜行者 Frost Walker |
+| 10 | minecraft:binding_curse | 绑定诅咒 Curse of Binding |
+| 11 | minecraft:soul_speed | 灵魂疾行 Soul Speed |
+| 12 | minecraft:swift_sneak | 迅捷潜行 Swift Sneak |
+| 13 | minecraft:sharpness | 锋利 Sharpness |
+| 14 | minecraft:smite | 亡灵杀手 Smite |
+| 15 | minecraft:bane_of_arthropods | 节肢杀手 Bane of Arthropods |
+| 16 | minecraft:knockback | 击退 Knockback |
+| 17 | minecraft:fire_aspect | 火焰附加 Fire Aspect |
+| 18 | minecraft:looting | 抢夺 Looting |
+| 19 | minecraft:sweeping_edge | 横扫之刃 Sweeping Edge |
+| 20 | minecraft:efficiency | 效率 Efficiency |
+| 21 | minecraft:silk_touch | 精准采集 Silk Touch |
+| 22 | minecraft:unbreaking | 耐久 Unbreaking |
+| 23 | minecraft:fortune | 时运 Fortune |
+| 24 | minecraft:power | 力量 Power |
+| 25 | minecraft:punch | 冲击 Punch |
+| 26 | minecraft:flame | 火矢 Flame |
+| 27 | minecraft:infinity | 无限 Infinity |
+| 28 | minecraft:luck_of_the_sea | 海之眷顾 Luck of the Sea |
+| 29 | minecraft:lure | 饵钓 Lure |
+| 30 | minecraft:loyalty | 忠诚 Loyalty |
+| 31 | minecraft:impaling | 穿刺 Impaling |
+| 32 | minecraft:riptide | 激流 Riptide |
+| 33 | minecraft:channeling | 引雷 Channeling |
+| 34 | minecraft:multishot | 多重射击 Multishot |
+| 35 | minecraft:quick_charge | 快速装填 Quick Charge |
+| 36 | minecraft:piercing | 穿透 Piercing |
+| 37 | minecraft:density | 密度 Density |
+| 38 | minecraft:breach | 破甲 Breach |
+| 39 | minecraft:wind_burst | 风爆 Wind Burst |
+| 40 | minecraft:mending | 经验修补 Mending |
+| 41 | minecraft:vanishing_curse | 消失诅咒 Curse of Vanishing |
+
+#### 设置容器槽位 Set Container Slot
+
+当槽位中的物品（在窗口中）添加/移除时由服务器发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x14`<br/>`container_set_slot` | 游戏 Play | 客户端 Client | 窗口ID Window ID | VarInt | 正在更新的窗口。0表示玩家物品栏。客户端忽略针对当前窗口ID以外的任何数据包；有关例外情况，请参见下文。 |
+| `0x14`<br/>`container_set_slot` | 游戏 Play | 客户端 Client | 状态ID State ID | VarInt | 服务器管理的序列号，用于避免不同步；请参阅点击容器 Click Container。 |
+| `0x14`<br/>`container_set_slot` | 游戏 Play | 客户端 Client | 槽位 Slot | 短整型 Short | 应该更新的槽位。 |
+| `0x14`<br/>`container_set_slot` | 游戏 Play | 客户端 Client | 槽位数据 Slot Data | 槽位 Slot | |
+
+如果窗口ID为0，即使打开了不同的容器窗口，热键栏和副手槽位（槽位36到45）也可能会更新。（原版服务器似乎不使用这种特殊情况。）当玩家查看除生存物品栏以外的创造模式物品栏选项卡时，更新也仅限于这些槽位。（原版服务器不以任何方式处理此限制，导致MC-242392。）
+
+当容器窗口打开时，服务器从不发送针对窗口ID 0的更新——所有窗口类型 window types 都包括玩家物品栏的槽位。客户端必须自动将针对容器窗口的物品栏部分的更改应用于主物品栏；服务器在窗口关闭时不会为ID 0重新发送它们。但是，由于护甲和副手槽位仅存在于ID 0上，因此在窗口打开时对这些槽位的更新必须由服务器推迟到窗口关闭为止。
+
+#### Cookie请求（游戏） Cookie Request (play)
+
+请求先前存储的cookie。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x15`<br/>`cookie_request` | 游戏 Play | 客户端 Client | 键 Key | 标识符 Identifier | cookie的标识符。 |
+
+#### 设置冷却 Set Cooldown
+
+对具有给定类型的所有物品应用冷却期。原版服务器将其用于末影珍珠。应在冷却开始时和冷却结束时发送此数据包（以补偿延迟），尽管客户端会自动结束冷却。可以应用于任何物品，请注意，交互仍然会与物品一起发送到服务器，但客户端不会播放动画，也不会尝试预测结果（即方块放置）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x16`<br/>`cooldown` | 游戏 Play | 客户端 Client | 冷却组 Cooldown Group | 标识符 Identifier | 物品的标识符（minecraft:stone）或冷却组（"use_cooldown"物品组件）Identifier of the item or the cooldown group |
+| `0x16`<br/>`cooldown` | 游戏 Play | 客户端 Client | 冷却刻 Cooldown Ticks | VarInt | 应用冷却的刻数，或0以清除冷却。 |
+
+#### 聊天建议 Chat Suggestions
+
+原版服务器未使用。可能是为自定义服务器提供的，用于向客户端发送聊天消息补全。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x17`<br/>`custom_chat_completions` | 游戏 Play | 客户端 Client | 动作 Action | VarInt枚举 VarInt Enum | 0：添加 Add，1：移除 Remove，2：设置 Set |
+| `0x17`<br/>`custom_chat_completions` | 游戏 Play | 客户端 Client | 条目 Entries | 字符串前缀数组 Prefixed Array of String (32767) | |
+
+#### 客户端绑定插件消息（游戏） Clientbound Plugin Message (play)
+
+模组和插件可以使用它来发送他们的数据。Minecraft本身使用几个插件频道 plugin channels。这些内部频道位于 `minecraft` 命名空间中。
+
+有关其工作原理的更多信息，请访问Dinnerbone的博客。有关内部和流行注册频道的更多文档在这里。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x18`<br/>`custom_payload` | 游戏 Play | 客户端 Client | 频道 Channel | 标识符 Identifier | 用于发送数据的插件频道 plugin channel 的名称。 |
+| `0x18`<br/>`custom_payload` | 游戏 Play | 客户端 Client | 数据 Data | 字节数组 Byte Array (1048576) | 任何数据。必须从数据包长度推断此数组的长度。 |
 
 ---
 
