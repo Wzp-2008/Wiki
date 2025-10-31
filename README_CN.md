@@ -1679,3 +1679,167 @@ if (playerDistance < distance) {
 | 偏航角 Yaw | Float | 绝对旋转，角度 Absolute rotation on the vertical axis, in degrees |
 | 俯仰角 Pitch | Float | 绝对旋转，角度 Absolute rotation on the horizontal axis, in degrees |
 
+
+#### 打开书 Open Book
+
+由服务器发送以打开客户端当前持有的书。用于提供更好的作弊检测。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x30`<br/><br/>*资源 resource:*<br/>`open_book` | 游戏 Play | 客户端 Client | 手 Hand | VarInt 枚举 Enum | 0: 主手 Main hand, 1: 副手 Off hand |
+
+#### 打开签名编辑器 Open Sign Editor
+
+由服务器发送以打开客户端的告示牌编辑器。仅在玩家放置告示牌时发送，不用于现有告示牌。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="2" \| *协议 protocol:*<br/>`0x31`<br/><br/>*资源 resource:*<br/>`open_sign_editor` | rowspan="2" \| 游戏 Play | rowspan="2" \| 客户端 Client | 位置 Location | 位置 Position | |
+| 是前面 Is Front Text | 布尔值 Boolean | 客户端是否应编辑告示牌的前面（true）还是背面（false）。 Whether the player should edit the front (true) or back (false) of the sign. |
+
+#### Ping（游戏） Ping (play)
+
+数据包不用于保持连接。服务器发送数据包，客户端回复一个相同ID的数据包。如果客户端在30秒内不回复，服务器将断开连接。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x32`<br/><br/>*资源 resource:*<br/>`ping` | 游戏 Play | 客户端 Client | ID | 整数 Int | |
+
+#### Ping 响应（游戏） Ping Response (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x33`<br/><br/>*资源 resource:*<br/>`pong_response` | 游戏 Play | 客户端 Client | ID | 整数 Int | ID由服务器传递 ID passed from the server |
+
+#### 放置幽灵方块 Place Ghost Block
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="2" \| *协议 protocol:*<br/>`0x34`<br/><br/>*资源 resource:*<br/>`place_ghost_recipe` | rowspan="2" \| 游戏 Play | rowspan="2" \| 客户端 Client | 窗口ID Window ID | 字节 Byte | |
+| 配方 Recipe | 标识符 Identifier | 配方ID Recipe ID |
+
+响应是将配方的输出放入合成网格。
+
+#### 玩家能力（客户端绑定） Player Abilities (clientbound)
+
+后两个字段的vanilla客户端在创造模式下分别使用0.05和0.1，在其他模式下使用0.02和0.08。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="3" \| *协议 protocol:*<br/>`0x35`<br/><br/>*资源 resource:*<br/>`player_abilities` | rowspan="3" \| 游戏 Play | rowspan="3" \| 客户端 Client | 标志 Flags | 字节 Byte | 位掩码。0x01: 无敌 Invulnerable, 0x02: 飞行 Flying, 0x04: 允许飞行 Allow Flying, 0x08: 即时破坏 Instant Break |
+| 飞行速度 Flying Speed | 浮点数 Float | 0.05是默认值 0.05 is default |
+| 视野修改器 Field of View Modifier | 浮点数 Float | 根据玩家的速度修改视野。0.1是默认值 Modifies the field of view, like a speed potion. 0.1 is default |
+
+#### 玩家聊天消息 Player Chat Message
+
+从其他玩家发送并由客户端显示在聊天框中。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="9" \| *协议 protocol:*<br/>`0x36`<br/><br/>*资源 resource:*<br/>`player_chat` | rowspan="9" \| 游戏 Play | rowspan="9" \| 客户端 Client | 发送者 Sender | UUID | 发送此消息的玩家使用 Used by the Notchian client for the disableChat launch option. |
+| 索引 Index | VarInt | |
+| 消息签名存在 Message Signature Present | 布尔值 Boolean | 指示下一个字段是否存在 States if a message signature is present |
+| 消息签名字节 Message Signature bytes | 可选 Optional 字节数组 Byte Array (256) | 仅当消息签名存在为true时存在。签名由发送玩家的会话密钥计算得出 Only present if Message Signature Present is true. Cryptography, the signature consists of the Sender UUID, Session UUID from the Player Session packet, Index, Salt, Timestamp in epoch seconds, the length of the original chat content, the original content itself, the length of Previous Messages, and all of the Previous Message signatures. |
+| 正文 Body | 字符串 String (256) | |
+| 时间戳 Timestamp | 长整数 Long | 表示消息发送时间（自Unix纪元以来的毫秒数） Represents the time the message was sent as milliseconds since the Unix epoch |
+| 盐 Salt | 长整数 Long | 用于验证消息签名的加密盐 Cryptography, used for validating the message signature |
+| rowspan="2" \| 先前消息 Previous Messages | 总计 Total | rowspan="2" \| 前置数组 Prefixed Array | VarInt | 最多20条先前消息的签名。消息按发送时间最旧优先的顺序排列 The maximum length is 20 in Notchian client. |
+| 消息ID Message ID | VarInt | 签名消息数组中此消息的签名的索引 The message Id + 1, used for validating message signature. |
+| 消息签名 Message Signature | 字节数组 Byte Array (256) | 引用消息的签名 The previous message's signature. |
+| 无符号内容存在 Unsigned Content Present | 布尔值 Boolean | 如果客户端没有安全聊天，服务器可能会发送没有签名的消息。客户端可以选择不显示它们（此数据包的客户端设置） True if the next field is present |
+| 无符号内容 Unsigned Content | 可选 Optional 文本组件 Text Component | |
+| 过滤类型 Filter Type | VarInt 枚举 Enum | 如果值为PASS_THROUGH，则不应渲染过滤类型位掩码。如果值为FULLY_FILTERED，则不应渲染消息，仅渲染过滤类型位掩码。如果值为PARTIALLY_FILTERED，则应对应用了过滤类型位掩码的消息进行过滤。 |
+| 过滤类型位 Filter Type Bits | 可选 Optional 位集合 BitSet | 仅当前一个字段的值为PARTIALLY_FILTERED时发送。对于每个聊天消息中被审查的字符，此位集合中对应的位被设置。 |
+| 聊天类型 Chat Type | VarInt | 注册表中聊天类型的ID The type of chat in the <code>minecraft:chat_type</code> registry, defined by the Registry Data packet. |
+| 发送者名称 Sender Name | 文本组件 Text Component | 用于填充聊天类型的sender字段的组件 The component to display as sender in the chat type |
+| 目标名称存在 Has Target Name | 布尔值 Boolean | 如果为true，则下一个字段存在 True if the next field is present |
+| 目标名称 Target Name | 文本组件 Text Component | 用于填充聊天类型的target字段的组件 |
+
+过滤类型 Filter Type 可以是以下值之一：
+
+| ID | 名称 Name | 说明 Notes |
+|---|---|---|
+| 0 | PASS_THROUGH | 消息未被过滤 Message is not filtered at all |
+| 1 | FULLY_FILTERED | 消息完全被过滤 Message is fully filtered |
+| 2 | PARTIALLY_FILTERED | 仅消息的某些部分被过滤 Only some characters in the message are filtered |
+
+#### 结束战斗 End Combat
+
+由服务器发送以指示战斗事件已结束。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x37`<br/><br/>*资源 resource:*<br/>`player_combat_end` | 游戏 Play | 客户端 Client | 持续时间 Duration | VarInt | 战斗持续时间的长度（以刻为单位）Length of the combat in ticks. |
+
+#### 进入战斗 Enter Combat
+
+由服务器发送以指示战斗事件已开始。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x38`<br/><br/>*资源 resource:*<br/>`player_combat_enter` | 游戏 Play | 客户端 Client | 无字段 no fields | | |
+
+#### 战斗死亡 Combat Death
+
+在玩家死亡或观看到玩家因其他原因死亡时从服务器发送（例如，因服务器命令导致的死亡）。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="2" \| *协议 protocol:*<br/>`0x39`<br/><br/>*资源 resource:*<br/>`player_combat_kill` | rowspan="2" \| 游戏 Play | rowspan="2" \| 客户端 Client | 玩家ID Player ID | VarInt | 死亡玩家的实体ID Entity ID of the player that died (should match the client's entity ID). |
+| 消息 Message | 文本组件 Text Component | 死亡消息 The death message |
+
+#### 玩家信息移除 Player Info Remove
+
+由服务器用于从客户端的Tab列表中移除玩家。服务器可以随意添加/移除玩家，但客户端在断开连接时会移除玩家。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| *协议 protocol:*<br/>`0x3A`<br/><br/>*资源 resource:*<br/>`player_info_remove` | 游戏 Play | 客户端 Client | 玩家数量 Number of Players | VarInt | 要从玩家列表中移除的玩家数 Number of elements in the following array. |
+| 玩家 Player | UUID数组 Array of UUID | 要移除的玩家的UUID UUIDs of players to remove. |
+
+#### 玩家信息更新 Player Info Update
+
+由服务器发送以更新客户端的Tab列表中的玩家信息。
+
+| 数据包ID Packet ID | 状态 State | 绑定至 Bound To | colspan="2" \| 字段名称 Field Name | colspan="2" \| 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|---|
+| rowspan="4" \| *协议 protocol:*<br/>`0x3B`<br/><br/>*资源 resource:*<br/>`player_info_update` | rowspan="4" \| 游戏 Play | rowspan="4" \| 客户端 Client | colspan="2" \| 操作 Actions | colspan="2" \| 字节 Byte | 确定要更新的字段的位掩码。详见下文 Determines what actions are present. |
+| colspan="2" \| 玩家数量 Number of Players | colspan="2" \| VarInt | 要更新的玩家数 Number of elements in the following array. |
+| rowspan="2" \| 玩家 Players | UUID | rowspan="2" \| 数组 Array | UUID | 玩家的UUID The player UUID |
+| 玩家操作 Player Actions | 玩家操作 Player Actions | 根据Actions字段确定的操作集合。详见下方的Player Actions。 The set of actions to apply, see below for details. |
+
+操作 Actions 字段确定在数据包中包含哪些Player Actions。它是以下值的位掩码：
+
+| 操作 Action | 位掩码 Bitmask | 说明 Notes |
+|---|---|---|
+| 添加玩家 ADD PLAYER | 0x01 | 添加玩家；如果玩家列表中已存在此UUID，则用提供的数据替换所有数据 |
+| 初始化聊天 INITIALIZE CHAT | 0x02 | |
+| 更新游戏模式 UPDATE GAME MODE | 0x04 | |
+| 更新列出状态 UPDATE LISTED | 0x08 | |
+| 更新延迟 UPDATE LATENCY | 0x10 | |
+| 更新显示名称 UPDATE DISPLAY NAME | 0x20 | |
+
+玩家操作 Player Actions 结构取决于操作字段中设置的标志：
+
+| 操作 Action | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|
+| 添加玩家 ADD PLAYER | 名称 Name | 字符串 String (16) | |
+| 属性数量 Number Of Properties | VarInt | 玩家属性数量 Number of elements in the following array. |
+| 属性 Property | 数组 Array | 名称 Name | 字符串 String (32767) | |
+| | 值 Value | 字符串 String (32767) | |
+| | 是签名 Is Signed | 布尔值 Boolean | |
+| | 签名 Signature | 可选 Optional 字符串 String (32767) | 仅当Is Signed为true时存在 Only if Is Signed is true. |
+| 初始化聊天 INITIALIZE CHAT | 有签名数据 Has Signature Data | 布尔值 Boolean | |
+| 聊天会话ID Chat Session ID | UUID | 仅当Has Signature Data为true时存在 Only sent if Has Signature Data is true. |
+| 公钥过期时间 Public key expiry time | 长整数 Long | 密钥过期时间，以纪元毫秒为单位。仅当Has Signature Data为true时发送 Key expiry time, as a UNIX timestamp in milliseconds. Only sent if Has Signature Data is true. |
+| 编码的公钥大小 Encoded public key size | VarInt | 以字节为单位的公钥大小。仅当Has Signature Data为true时发送 Size of the following array. Only sent if Has Signature Data is true. Maximum length is 512 bytes. |
+| 编码的公钥 Encoded public key | 字节数组 Byte Array (512) | X.509编码的公钥。仅当Has Signature Data为true时发送 The player's public key, in X.509 format. Only sent if Has Signature Data is true. |
+| 公钥签名大小 Public key signature size | VarInt | 以字节为单位的公钥签名大小。仅当Has Signature Data为true时发送 Size of the following array. Only sent if Has Signature Data is true. Maximum length is 4096 bytes. |
+| 公钥签名 Public key signature | 字节数组 Byte Array (4096) | 公钥数据的签名。仅当Has Signature Data为true时发送 The public key's digital signature. Only sent if Has Signature Data is true. |
+| 更新游戏模式 UPDATE GAME MODE | 游戏模式 Game Mode | VarInt | |
+| 更新列出状态 UPDATE LISTED | 已列出 Listed | 布尔值 Boolean | 玩家是否应该在Tab列表中显示 Whether the player should be listed on the tab list. |
+| 更新延迟 UPDATE LATENCY | Ping | VarInt | 以毫秒为单位测量 Measured in milliseconds. |
+| 更新显示名称 UPDATE DISPLAY NAME | 有显示名称 Has Display Name | 布尔值 Boolean | |
+| 显示名称 Display Name | 可选 Optional 文本组件 Text Component | 仅当Has Display Name为true时发送 Only sent if Has Display Name is true. |
+
+在游戏模式字段中：生存模式为0，创造模式为1，冒险模式为2，旁观模式为3。
