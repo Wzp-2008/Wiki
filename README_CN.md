@@ -1379,3 +1379,134 @@ if (playerDistance < distance) {
 **待继续：**
 - 游戏（Play）剩余数据包 - 约8200行
 - 导航（Navigation）
+| 1039 | 幻翼咬 Phantom bites | |
+| 1040 | 僵尸转化为溺尸 Zombie converts to drowned | |
+| 1041 | 尸壳溺水转化为僵尸 Husk converts to zombie by drowning | |
+| 1042 | 砂轮使用 Grindstone used | |
+| 1043 | 书页翻页 Book page turned | |
+| 1044 | 锻造台使用 Smithing table used | |
+| 1045 | 滴水石锥落地 Pointed dripstone landing | |
+| 1046 | 熔岩从滴水石滴到炼药锅 Lava dripping on cauldron from dripstone | |
+| 1047 | 水从滴水石滴到炼药锅 Water dripping on cauldron from dripstone | |
+| 1048 | 骷髅转化为流浪者 Skeleton converts to stray | |
+| 1049 | 合成器成功合成物品 Crafter successfully crafts item | |
+| 1050 | 合成器合成物品失败 Crafter fails to craft item | |
+
+**粒子 Particle**
+
+| ID | 名称 Name | 数据 Data |
+|---|---|---|
+| 1500 | 堆肥桶堆肥 Composter composts | |
+| 1501 | 熔岩转化方块 Lava converts block | 将水转化为石头，或移除现有方块（如火把） |
+| 1502 | 红石火把熄灭 Redstone torch burns out | |
+| 1503 | 末影之眼放置在末地传送门框架 Ender eye placed in end portal frame | |
+| 1504 | 流体从滴水石滴下 Fluid drips from dripstone | |
+| 1505 | 骨粉粒子和声音 Bone meal particles and sound | 生成多少粒子 How many particles to spawn |
+| 2000 | 发射器激活烟雾 Dispenser activation smoke | 方向 Direction，见下文 |
+| 2001 | 方块破坏 + 方块破坏声音 Block break + block break sound | 方块状态ID Block state ID |
+| 2002 | 喷溅药水 Splash potion | RGB颜色整数值 RGB color as an integer（例如 #7FA1FF 为 8364543） |
+| 2003 | 末影之眼实体破坏动画 Eye of ender entity break animation | 粒子和声音 particles and sound |
+| 2004 | 刷怪笼生成生物 Spawner spawns mob | 烟雾 + 火焰 smoke + flames |
+| 2006 | 龙息 Dragon breath | |
+| 2007 | 瞬间喷溅药水 Instant splash potion | RGB颜色整数值 RGB color as an integer（例如 #7FA1FF 为 8364543） |
+| 2008 | 末影龙破坏方块 Ender dragon destroys block | |
+| 2009 | 湿海绵蒸发 Wet sponge vaporizes | |
+| 2010 | 合成器激活烟雾 Crafter activation smoke | 方向 Direction，见下文 |
+| 2011 | 蜜蜂给植物施肥 Bee fertilizes plant | 生成多少粒子 How many particles to spawn |
+| 2012 | 海龟蛋放置 Turtle egg placed | 生成多少粒子 How many particles to spawn |
+| 2013 | 重击攻击（锤） Smash attack (mace) | 生成多少粒子 How many particles to spawn |
+| 3000 | 末地折跃门生成 End gateway spawns | |
+| 3001 | 末影龙复活 Ender dragon resurrected | |
+| 3002 | 电火花 Electric spark | |
+| 3003 | 铜涂蜡 Copper apply wax | |
+| 3004 | 铜去蜡 Copper remove wax | |
+| 3005 | 铜刮除氧化 Copper scrape oxidation | |
+| 3006 | 幽匿充能 Sculk charge | |
+| 3007 | 幽匿尖啸体尖叫 Sculk shrieker shriek | |
+| 3008 | 方块完成刷洗 Block finished brushing | 方块状态ID Block state ID |
+| 3009 | 嗅探兽蛋破裂 Sniffer egg cracks | 如果为1，3-6；如果为其他数字，1-3个粒子将被生成 |
+| 3011 | 试炼刷怪笼生成生物（在刷怪笼处） Trial spawner spawns mob (at spawner) | |
+| 3012 | 试炼刷怪笼生成生物（在生成位置） Trial spawner spawns mob (at spawn location) | |
+| 3013 | 试炼刷怪笼检测到玩家 Trial spawner detects player | 附近玩家数量 Number of players nearby |
+| 3014 | 试炼刷怪笼弹出物品 Trial spawner ejects item | |
+| 3015 | 宝库激活 Vault activates | |
+| 3016 | 宝库停用 Vault deactivates | |
+| 3017 | 宝库弹出物品 Vault ejects item | |
+| 3018 | 蜘蛛网编织 Cobweb weaved | |
+| 3019 | 不祥试炼刷怪笼检测到玩家 Ominous trial spawner detects player | 附近玩家数量 Number of players nearby |
+| 3020 | 试炼刷怪笼变为不祥 Trial spawner turns ominous | 如果为0，声音将以0.3音量播放。否则以全音量播放 |
+| 3021 | 不祥物品刷怪笼生成物品 Ominous item spawner spawns item | |
+
+**烟雾方向 Smoke directions:**
+
+| ID | 方向 Direction |
+|---|---|
+| 0 | 下 Down |
+| 1 | 上 Up |
+| 2 | 北 North |
+| 3 | 南 South |
+| 4 | 西 West |
+| 5 | 东 East |
+
+### 粒子 Particle
+
+显示指定的粒子效果 Displays the named particle。
+
+**数据包ID Packet ID:** `0x29`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 远距离 Long Distance | Boolean | 如果为true，粒子距离从256增加到65536 If true, particle distance increases from 256 to 65536 |
+| 始终可见 Always Visible | Boolean | 此粒子是否应始终可见 Whether this particle should always be visible |
+| X | Double | 粒子的X位置 X position of the particle |
+| Y | Double | 粒子的Y位置 Y position of the particle |
+| Z | Double | 粒子的Z位置 Z position of the particle |
+| X偏移量 Offset X | Float | 乘以 `random.nextGaussian()` 后加到X位置 This is added to the X position after being multiplied by random.nextGaussian() |
+| Y偏移量 Offset Y | Float | 乘以 `random.nextGaussian()` 后加到Y位置 This is added to the Y position after being multiplied by random.nextGaussian() |
+| Z偏移量 Offset Z | Float | 乘以 `random.nextGaussian()` 后加到Z位置 This is added to the Z position after being multiplied by random.nextGaussian() |
+| 最大速度 Max Speed | Float | |
+| 粒子数量 Particle Count | Int | 要创建的粒子数量 The number of particles to create |
+| 粒子ID Particle ID | VarInt | `minecraft:particle_type` 注册表中的ID ID in the minecraft:particle_type registry |
+| 数据 Data | Varies | 粒子数据，详见粒子页面 Particle data as specified in Particles |
+
+### 更新光照 Update Light
+
+更新区块的光照级别 Updates light levels for a chunk。
+
+**数据包ID Packet ID:** `0x2A`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 区块X Chunk X | VarInt | 区块坐标（方块坐标除以16，向下取整） Chunk coordinate (block coordinate divided by 16, rounded down) |
+| 区块Z Chunk Z | VarInt | 区块坐标（方块坐标除以16，向下取整） Chunk coordinate (block coordinate divided by 16, rounded down) |
+| 数据 Data | Light Data | |
+
+一个位永远不会同时在方块光遮罩和空方块光遮罩中设置，尽管它可能在两者中都不存在（如果对应的区块部分不需要更新方块光）。天空光遮罩和空天空光遮罩也是如此 A bit will never be set in both the block light mask and the empty block light mask, though it may be present in neither of them. The same applies to the sky light mask and the empty sky light mask。
+
+### 登录（游戏）Login (play)
+
+**数据包ID Packet ID:** `0x2B`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 实体ID Entity ID | Int | 玩家的实体ID The player's Entity ID (EID) |
+| 是否为硬核 Is hardcore | Boolean | |
+| 维度名称 Dimension Names | Array of Identifier | 服务器上所有维度的标识符 Identifiers for all dimensions on the server |
+| 最大玩家数 Max Players | VarInt | 曾用于客户端绘制玩家列表，现在被忽略 Was once used by the client to draw the player list, but now it is ignored |
+| 视距 View Distance | VarInt | 渲染距离（2-32） Render distance (2-32) |
+| 模拟距离 Simulation Distance | VarInt | 客户端将处理特定事物（如实体）的距离 The distance that the client will process specific things, such as entities |
+| 减少调试信息 Reduced Debug Info | Boolean | 如果为true，原版客户端在调试屏幕上显示减少的信息 If true, a vanilla client shows reduced information on the debug screen |
+| 启用重生屏幕 Enable respawn screen | Boolean | 当doImmediateRespawn游戏规则为true时设置为false Set to false when the doImmediateRespawn gamerule is true |
+| 限制合成 Do limited crafting | Boolean | 玩家是否只能合成已解锁的配方。目前客户端未使用 Whether players can only craft recipes they have already unlocked. Currently unused by the client |
+| 维度类型 Dimension Type | VarInt | `minecraft:dimension_type` 注册表中的维度类型ID，由注册表数据包定义 The ID of the type of dimension in the minecraft:dimension_type registry, defined by the Registry Data packet |
+| 维度名称 Dimension Name | Identifier | 正在生成到的维度的名称 Name of the dimension being spawned into |
+| 哈希种子 Hashed seed | Long | 世界种子的SHA-256哈希的前8个字节。客户端用于生物群系噪声 First 8 bytes of the SHA-256 hash of the world's seed. Used client-side for biome noise |
+| 游戏模式 Game mode | Unsigned Byte | 0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator |
+| 上一个游戏模式 Previous Game mode | Byte | -1: 未定义 Undefined（可能永远不会使用），0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator |
+
