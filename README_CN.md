@@ -902,6 +902,82 @@ Boss栏动作：
 
 清除客户端当前的标题信息，可选择重置它。
 
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0E`<br/>`clear_titles` | 游戏 Play | 客户端 Client | 重置 Reset | 布尔值 Boolean | |
+
+#### 命令建议响应 Command Suggestions Response
+
+服务器响应发送给它的最后一个单词的自动补全列表。在普通聊天的情况下，这是一个玩家用户名。命令名称和参数也受支持。客户端在列出它们之前按字母顺序对它们进行排序。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0F`<br/>`command_suggestions` | 游戏 Play | 客户端 Client | ID | VarInt | 事务ID Transaction ID。 |
+| `0x0F`<br/>`command_suggestions` | 游戏 Play | 客户端 Client | 开始 Start | VarInt | 要替换的文本的开始位置。 |
+| `0x0F`<br/>`command_suggestions` | 游戏 Play | 客户端 Client | 长度 Length | VarInt | 要替换的文本的长度。 |
+| `0x0F`<br/>`command_suggestions` | 游戏 Play | 客户端 Client | 匹配 Matches - 匹配 Match | 前缀数组 Prefixed Array - 字符串 String (32767) | 一个要插入的合格值，请注意，每个命令都是单独发送的，而不是在单个字符串中，因此需要计数 Count。 |
+| `0x0F`<br/>`command_suggestions` | 游戏 Play | 客户端 Client | 匹配 Matches - 工具提示 Tooltip | 前缀数组 Prefixed Array - 可选文本组件 Prefixed Optional Text Component | 要显示的工具提示。 |
+
+#### 命令 Commands
+
+列出服务器上的所有命令以及如何解析它们。
+
+这是一个有向图，有一个根节点。每个重定向或子节点必须仅引用已声明的节点。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x10`<br/>`commands` | 游戏 Play | 客户端 Client | 节点 Nodes | 节点前缀数组 Prefixed Array of Node | 节点数组 An array of nodes。 |
+| `0x10`<br/>`commands` | 游戏 Play | 客户端 Client | 根索引 Root index | VarInt | 前一个数组中 `root` 节点的索引。 |
+
+有关此数据包的更多信息，请参阅命令数据 Command Data 文章。
+
+#### 关闭容器 Close Container
+
+当窗口被强制关闭时，例如当箱子在打开时被摧毁时，此数据包从服务器发送到客户端。原版客户端忽略提供的窗口ID并关闭任何活动窗口。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x11`<br/>`container_close` | 游戏 Play | 客户端 Client | 窗口ID Window ID | VarInt | 这是已关闭窗口的ID。0表示物品栏 inventory。 |
+
+#### 设置容器内容 Set Container Content
+
+替换容器窗口的内容。在初始化容器窗口或玩家物品栏时由服务器发送，并响应状态ID不匹配（请参阅点击容器 Click Container）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x12`<br/>`container_set_content` | 游戏 Play | 客户端 Client | 窗口ID Window ID | VarInt | 要发送物品的窗口ID。0表示玩家物品栏。客户端忽略针对当前窗口ID以外的任何数据包。但是，玩家物品栏可以随时作为目标，这是一个例外。（原版服务器似乎不使用这种特殊情况。） |
+| `0x12`<br/>`container_set_content` | 游戏 Play | 客户端 Client | 状态ID State ID | VarInt | 服务器管理的序列号，用于避免不同步；请参阅点击容器 Click Container。 |
+| `0x12`<br/>`container_set_content` | 游戏 Play | 客户端 Client | 槽位数据 Slot Data | 槽位前缀数组 Prefixed Array of Slot | |
+| `0x12`<br/>`container_set_content` | 游戏 Play | 客户端 Client | 携带的物品 Carried Item | 槽位 Slot | 用鼠标拖动的物品。 |
+
+有关槽位如何索引的更多信息，请参阅物品栏窗口 inventory windows。使用打开屏幕 Open Screen 在客户端上打开容器。
+
+#### 设置容器属性 Set Container Property
+
+此数据包用于通知客户端GUI窗口的一部分应该更新。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x13`<br/>`container_set_data` | 游戏 Play | 客户端 Client | 窗口ID Window ID | VarInt | |
+| `0x13`<br/>`container_set_data` | 游戏 Play | 客户端 Client | 属性 Property | 短整型 Short | 要更新的属性，见下文。 |
+| `0x13`<br/>`container_set_data` | 游戏 Play | 客户端 Client | 值 Value | 短整型 Short | 属性的新值，见下文。 |
+
+属性 Property 字段的含义取决于窗口的类型。下表显示了窗口类型和属性的已知组合，以及如何解释值。
+
+| 窗口类型 Window type | 属性 Property | 值 Value |
+|------|------|------|
+| 熔炉 Furnace | 0：火焰图标（剩余燃料） Fire icon (fuel left) | 从燃料燃烧时间倒计时到0（游戏刻 in-game ticks） |
+| 熔炉 Furnace | 1：最大燃料燃烧时间 Maximum fuel burn time | 燃料燃烧时间或0（游戏刻 in-game ticks） |
+| 熔炉 Furnace | 2：进度箭头 Progress arrow | 从0计数到最大进度（游戏刻 in-game ticks） |
+| 熔炉 Furnace | 3：最大进度 Maximum progress | 原版服务器上始终为200 |
+| 附魔台 Enchantment Table | 0：顶部附魔槽的等级要求 Level requirement for top enchantment slot | 附魔的经验等级要求 The enchantment's xp level requirement |
+| 附魔台 Enchantment Table | 1：中部附魔槽的等级要求 Level requirement for middle enchantment slot | 附魔的经验等级要求 The enchantment's xp level requirement |
+| 附魔台 Enchantment Table | 2：底部附魔槽的等级要求 Level requirement for bottom enchantment slot | 附魔的经验等级要求 The enchantment's xp level requirement |
+| 附魔台 Enchantment Table | 3：附魔种子 The enchantment seed | 用于在客户端绘制附魔名称（在标准银河字母 SGA中）。相同的种子用于计算附魔，但某些数据不会发送到客户端，以防止轻松猜测整个列表（此处的种子值是常规种子按位与 `0xFFFFFFF0`）。 |
+| 附魔台 Enchantment Table | 4：鼠标悬停在顶部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over top enchantment slot | 附魔ID（设置为-1隐藏它），见下文的值 The enchantment ID (set to -1 to hide it) |
+| 附魔台 Enchantment Table | 5：鼠标悬停在中部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over middle enchantment slot | 附魔ID（设置为-1隐藏它） The enchantment ID (set to -1 to hide it) |
+| 附魔台 Enchantment Table | 6：鼠标悬停在底部附魔槽上显示的附魔ID Enchantment ID shown on mouse hover over bottom enchantment slot | 附魔ID（设置为-1隐藏它） The enchantment ID (set to -1 to hide it) |
+
 ---
 
 **翻译进度：第1-5部分完成，第6部分（游戏 Play）进行中**
