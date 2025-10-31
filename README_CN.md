@@ -1843,3 +1843,125 @@ if (playerDistance < distance) {
 | 显示名称 Display Name | 可选 Optional 文本组件 Text Component | 仅当Has Display Name为true时发送 Only sent if Has Display Name is true. |
 
 在游戏模式字段中：生存模式为0，创造模式为1，冒险模式为2，旁观模式为3。
+
+#### 看向 Look At
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="8" 0x3B | rowspan="8" Play | rowspan="8" Client | 来自X From X | Double | |
+| 来自Y From Y | Double | |
+| 来自Z From Z | Double | |
+| 目标X At X | Double | |
+| 目标Y At Y | Double | |
+| 目标Z At Z | Double | |
+| 瞄准类型 Aim With | VarInt 枚举 Enum | 0: 脚 feet, 1: 眼睛 eyes |
+| 实体ID Entity ID | 可选 Optional VarInt | 要看向的实体 The entity to look at. Only if Aim With is eyes. |
+
+#### 同步玩家位置 Synchronize Player Position
+
+传送玩家的位置和视角。服务器可以根据需要更新位置、视角或两者。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="8" 0x3C | rowspan="8" Play | rowspan="8" Client | X | Double | 绝对或相对位置，取决于Flags Absolute or relative position, depending on Flags. |
+| Y | Double | 绝对或相对位置，取决于Flags Absolute or relative position, depending on Flags. |
+| Z | Double | 绝对或相对位置，取决于Flags Absolute or relative position, depending on Flags. |
+| 偏航角 Yaw | Float | 绝对或相对旋转，取决于Flags Absolute or relative rotation, depending on Flags. |
+| 俯仰角 Pitch | Float | 绝对或相对旋转，取决于Flags Absolute or relative rotation, depending on Flags. |
+| 标志 Flags | Byte | 位掩码。0x01: X是相对的, 0x02: Y是相对的, 0x04: Z是相对的, 0x08: Yaw是相对的, 0x10: Pitch是相对的 Bit mask. 0x01: X is relative, 0x02: Y is relative, 0x04: Z is relative, 0x08: Yaw is relative, 0x10: Pitch is relative. |
+| 传送ID Teleport ID | VarInt | 客户端应在传送确认中回复此ID Client should reply with Teleport Confirm containing the same Teleport ID. |
+
+#### 更新配方书 Update Recipe Book
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="8" 0x43 | rowspan="8" Play | rowspan="8" Client | 配方数量 Recipe Count | VarInt | 配方数组中的元素数量 Number of elements in the following array. |
+| 配方 Recipes | 配方ID Recipe ID | rowspan="6" 前缀数组 Prefixed Array | VarInt | 分配给配方的ID ID to assign to the recipe. |
+| 显示 Display | 配方显示 Recipe Display | |
+| 组ID Group ID | VarInt | |
+| 类别ID Category ID | VarInt | minecraft:recipe_book_category注册表中的ID ID in the minecraft:recipe_book_category registry. |
+| 材料 Ingredients | 前缀可选 Prefixed Optional 前缀数组 Prefixed Array of ID集 ID Set | minecraft:item注册表中的ID或内联定义 IDs in the minecraft:item registry, or an inline definition. |
+| 标志 Flags | Byte | 0x01: 显示通知 show notification; 0x02: 高亮为新 highlight as new |
+| colspan="2" 替换 Replace | colspan="2" 布尔值 Boolean | 替换或添加到已知配方 Replace or Add to known recipes |
+
+#### 配方书移除 Recipe Book Remove
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 0x44 | Play | Client | 配方 Recipes | 前缀数组 Prefixed Array of VarInt | 要移除的配方ID IDs of recipes to remove. |
+
+#### 配方书设置 Recipe Book Settings
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="8" 0x45 | rowspan="8" Play | rowspan="8" Client | 工作台配方书打开 Crafting Recipe Book Open | 布尔值 Boolean | 如果为true，当玩家打开背包时工作台配方书将打开 If true, then the crafting recipe book will be open when the player opens its inventory. |
+| 工作台配方书过滤器激活 Crafting Recipe Book Filter Active | 布尔值 Boolean | 如果为true，当玩家打开背包时过滤选项将激活 If true, then the filtering option is active when the player opens its inventory. |
+| 熔炉配方书打开 Smelting Recipe Book Open | 布尔值 Boolean | 如果为true，当玩家打开熔炉时熔炉配方书将打开 If true, then the smelting recipe book will be open when the player opens its inventory. |
+| 熔炉配方书过滤器激活 Smelting Recipe Book Filter Active | 布尔值 Boolean | 如果为true，当玩家打开熔炉时过滤选项将激活 If true, then the filtering option is active when the player opens its inventory. |
+| 高炉配方书打开 Blast Furnace Recipe Book Open | 布尔值 Boolean | 如果为true，当玩家打开高炉时高炉配方书将打开 If true, then the blast furnace recipe book will be open when the player opens its inventory. |
+| 高炉配方书过滤器激活 Blast Furnace Recipe Book Filter Active | 布尔值 Boolean | 如果为true，当玩家打开高炉时过滤选项将激活 If true, then the filtering option is active when the player opens its inventory. |
+| 烟熏炉配方书打开 Smoker Recipe Book Open | 布尔值 Boolean | 如果为true，当玩家打开烟熏炉时烟熏炉配方书将打开 If true, then the smoker recipe book will be open when the player opens its inventory. |
+| 烟熏炉配方书过滤器激活 Smoker Recipe Book Filter Active | 布尔值 Boolean | 如果为true，当玩家打开烟熏炉时过滤选项将激活 If true, then the filtering option is active when the player opens its inventory. |
+
+#### 移除实体 Remove Entities
+
+当实体需要在客户端销毁时由服务器发送 Sent by the server when an entity is to be destroyed on the client.
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 0x46 | Play | Client | 实体ID Entity IDs | 前缀数组 Prefixed Array of VarInt | 要销毁的实体列表 The list of entities to destroy. |
+
+#### 移除实体效果 Remove Entity Effect
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="2" 0x47 | rowspan="2" Play | rowspan="2" Client | 实体ID Entity ID | VarInt | |
+| 效果ID Effect ID | VarInt | 参见状态效果列表 See status effect table. |
+
+#### 重置分数 Reset Score
+
+当客户端应移除记分板项目时发送此数据包 This is sent to the client when it should remove a scoreboard item.
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="2" 0x48 | rowspan="2" Play | rowspan="2" Client | 实体名称 Entity Name | 字符串 String (32767) | 拥有此分数的实体。对于玩家，这是他们的用户名；对于其他实体，这是他们的UUID The entity whose score this is. For players, this is their username; for other entities, it is their UUID. |
+| 目标名称 Objective Name | 前缀可选 Prefixed Optional 字符串 String (32767) | 分数所属目标的名称 The name of the objective the score belongs to. |
+
+#### 移除资源包（游戏） Remove Resource Pack (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 0x49 | Play | Client | UUID | 可选 Optional UUID | 要移除的资源包的UUID The UUID of the resource pack to be removed. |
+
+#### 添加资源包（游戏） Add Resource Pack (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="5" 0x4A | rowspan="5" Play | rowspan="5" Client | UUID | UUID | 资源包的唯一标识符 The unique identifier of the resource pack. |
+| URL | 字符串 String (32767) | 资源包的URL The URL to the resource pack. |
+| 哈希 Hash | 字符串 String (40) | 40字符的十六进制，不区分大小写的SHA-1哈希 A 40 character hexadecimal, case-insensitive SHA-1 hash of the resource pack file. |
+| 强制 Forced | 布尔值 Boolean | 原版客户端将被强制使用服务器的资源包。如果他们拒绝，将被踢出服务器 The vanilla client will be forced to use the resource pack from the server. If they decline, they will be kicked from the server. |
+| 提示消息 Prompt Message | 前缀可选 Prefixed Optional 文本组件 Text Component | 这将显示在提示中，让客户端接受或拒绝资源包 This is shown in the prompt making the client accept or decline the resource pack. |
+
+#### 重生 Respawn
+
+要更改玩家的维度（主世界/下界/末地），向他们发送包含适当维度的重生数据包，然后是新维度的预区块/区块，最后是位置和视角数据包 To change the player's dimension (overworld/nether/end), send them a respawn packet with the appropriate dimension, followed by prechunks/chunks for the new dimension, and finally a position and look packet.
+
+加载屏幕的背景根据此数据包中指定的维度名称和之前登录或重生数据包中指定的维度名称确定 The background of the loading screen is determined based on the Dimension Name specified in this packet and the one specified in the previous Login or Respawn packet.
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| rowspan="13" 0x4B | rowspan="13" Play | rowspan="13" Client | 维度类型 Dimension Type | VarInt | minecraft:dimension_type注册表中的维度类型ID The ID of type of dimension in the minecraft:dimension_type registry. |
+| 维度名称 Dimension Name | 标识符 Identifier | 正在生成到的维度名称 Name of the dimension being spawned into. |
+| 哈希种子 Hashed seed | Long | 世界种子SHA-256哈希的前8个字节 First 8 bytes of the SHA-256 hash of the world's seed. |
+| 游戏模式 Game mode | 无符号字节 Unsigned Byte | 0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator. |
+| 之前的游戏模式 Previous Game mode | 字节 Byte | -1: 未定义 Undefined, 0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator. |
+| 是调试 Is Debug | 布尔值 Boolean | 如果世界是调试模式世界则为true True if the world is a debug mode world. |
+| 是平坦 Is Flat | 布尔值 Boolean | 如果世界是超平坦世界则为true True if the world is a superflat world. |
+| 有死亡位置 Has death location | 布尔值 Boolean | 如果玩家有死亡位置则为true If true, then the next two fields are present. |
+| 死亡维度名称 Death dimension Name | 可选 Optional 标识符 Identifier | 玩家死亡的维度名称 Name of the dimension the player died in. |
+| 死亡位置 Death location | 可选 Optional 位置 Position | 玩家死亡的坐标 The location that the player died at. |
+| 传送门冷却 Portal cooldown | VarInt | 玩家在使用传送门后无法再次使用传送门的刻数 The number of ticks until the player can use the portal again. |
+| 海平面变化 Sea level | VarInt | |
+| 数据保持 Data kept | Byte | 位掩码。0x01: 保留属性 Keep attributes, 0x02: 保留元数据 Keep metadata. |
+
