@@ -1090,6 +1090,128 @@ Boss栏动作：
 | `0x18`<br/>`custom_payload` | 游戏 Play | 客户端 Client | 频道 Channel | 标识符 Identifier | 用于发送数据的插件频道 plugin channel 的名称。 |
 | `0x18`<br/>`custom_payload` | 游戏 Play | 客户端 Client | 数据 Data | 字节数组 Byte Array (1048576) | 任何数据。必须从数据包长度推断此数组的长度。 |
 
+在原版客户端中，最大数据长度为1048576字节。
+
+#### 伤害事件 Damage Event
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 受到伤害的实体的ID The ID of the entity taking damage |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源类型ID Source Type ID | VarInt | `minecraft:damage_type` 注册表中的伤害类型，由注册表数据 Registry Data 数据包定义。 |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源原因ID Source Cause ID | VarInt | 负责伤害的实体的ID+1（如果存在）。如果不存在，则值为0 |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源直接ID Source Direct ID | VarInt | 直接造成伤害的实体的ID+1（如果存在）。如果不存在，则值为0。如果此字段存在：<br/>- 如果伤害是间接造成的，例如使用弹射物，此字段将包含该弹射物的ID；<br/>- 如果伤害是直接造成的，例如手动攻击，此字段将包含与源原因ID Source Cause ID相同的值。 |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源位置 Source Position - X | 可选前缀 Prefixed Optional - 双精度 Double | 当伤害由/damage命令造成且指定了位置时，原版服务器发送源位置 Source Position |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源位置 Source Position - Y | 可选前缀 Prefixed Optional - 双精度 Double | 同上 |
+| `0x19`<br/>`damage_event` | 游戏 Play | 客户端 Client | 源位置 Source Position - Z | 可选前缀 Prefixed Optional - 双精度 Double | 同上 |
+
+#### 调试样本 Debug Sample
+
+在客户端订阅调试样本订阅 Debug Sample Subscription 后定期发送的样本数据。
+
+原版服务器仅向服务器操作员的玩家发送调试样本。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1A`<br/>`debug_sample` | 游戏 Play | 客户端 Client | 样本 Sample | 长整型前缀数组 Prefixed Array of Long | 类型相关的样本数组 Array of type-dependent samples。 |
+| `0x1A`<br/>`debug_sample` | 游戏 Play | 客户端 Client | 样本类型 Sample Type | VarInt枚举 VarInt Enum | 见下文。 |
+
+类型 Types：
+
+| ID | 名称 Name | 描述 Description |
+|----|------|------|
+| 0 | 刻时间 Tick time | 四个不同的刻相关指标，每个都由数组中的一个长整型表示。它们以纳秒为单位测量，如下所示：<br/>- 0：完整刻时间 Full tick time：以下三个时间的总和；<br/>- 1：服务器刻时间 Server tick time：主服务器刻逻辑；<br/>- 2：任务时间 Tasks time：计划在主逻辑后执行的任务；<br/>- 3：空闲时间 Idle time：完成完整50ms刻周期的空闲时间。<br/>请注意，原版客户端通过从完整刻时间中减去空闲时间来计算用于最小/最大/平均显示的时序。如果空闲时间（荒谬地）大于完整刻时间，这可能导致显示的值变为负数。 |
+
+#### 删除消息 Delete Message
+
+从客户端的聊天中删除消息。这仅适用于带签名的消息；无法使用此数据包删除系统消息。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1B`<br/>`delete_chat` | 游戏 Play | 客户端 Client | 消息ID Message ID | VarInt | 消息ID+1，用于验证消息签名。仅当此字段的值等于0时，下一个字段才存在。 |
+| `0x1B`<br/>`delete_chat` | 游戏 Play | 客户端 Client | 签名 Signature | 可选字节数组 Optional Byte Array (256) | 前一条消息的签名。始终为256字节，且不带长度前缀。 |
+
+#### 断开连接（游戏） Disconnect (play)
+
+在断开客户端连接之前由服务器发送。客户端假设服务器在数据包到达时已经关闭了连接。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1C`<br/>`disconnect` | 游戏 Play | 客户端 Client | 原因 Reason | 文本组件 Text Component | 连接终止时显示给客户端。 |
+
+#### 伪装的聊天消息 Disguised Chat Message
+
+向客户端发送聊天消息，但不包含任何消息签名信息。
+
+原版服务器在控制台通过命令与玩家通信时使用此数据包，例如 `/say`、`/tell`、`/me` 等。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1D`<br/>`disguised_chat` | 游戏 Play | 客户端 Client | 消息 Message | 文本组件 Text Component | 在客户端格式化消息时，这用作 `content` 参数。 |
+| `0x1D`<br/>`disguised_chat` | 游戏 Play | 客户端 Client | 聊天类型 Chat Type | ID或聊天类型 ID or Chat Type | 由注册表数据 Registry Data 数据包定义的 `minecraft:chat_type` 注册表中的聊天类型，或内联定义。 |
+| `0x1D`<br/>`disguised_chat` | 游戏 Play | 客户端 Client | 发送者名称 Sender Name | 文本组件 Text Component | 发送消息的人的名称，通常是发送者的显示名称。<br/>在客户端格式化消息时，这用作 `sender` 参数。 |
+| `0x1D`<br/>`disguised_chat` | 游戏 Play | 客户端 Client | 目标名称 Target Name | 可选文本组件前缀 Prefixed Optional Text Component | 接收消息的人的名称，通常是接收者的显示名称。<br/>在客户端格式化消息时，这用作 `target` 参数。 |
+
+#### 实体事件 Entity Event
+
+实体状态通常会触发实体的动画。可用状态因实体类型而异（并且对该类型的子类也可用）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1E`<br/>`entity_event` | 游戏 Play | 客户端 Client | 实体ID Entity ID | 整型 Int | |
+| `0x1E`<br/>`entity_event` | 游戏 Play | 客户端 Client | 实体状态 Entity Status | 字节枚举 Byte Enum | 有关哪些状态对每种类型的实体有效的列表，请参阅实体状态 Entity statuses。 |
+
+#### 传送实体 Teleport Entity
+
+**警告：** 此数据包的Mojang指定名称在1.21.2中从 `teleport_entity` 更改为 `entity_position_sync`。有一个新的 `teleport_entity`，本文档更恰当地称为同步载具位置 Synchronize Vehicle Position。该数据包具有不同的功能，如果用来代替此数据包将导致混乱的结果。
+
+当实体移动超过8个方块时，服务器发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | X | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | Y | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | Z | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 速度X Velocity X | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 速度Y Velocity Y | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 速度Z Velocity Z | 双精度 Double | |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 偏航角 Yaw | 浮点型 Float | X轴上的旋转，以度为单位 Rotation on the X axis, in degrees。 |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 俯仰角 Pitch | 浮点型 Float | Y轴上的旋转，以度为单位 Rotation on the Y axis, in degrees。 |
+| `0x1F`<br/>`entity_position_sync` | 游戏 Play | 客户端 Client | 在地面上 On Ground | 布尔值 Boolean | |
+
+#### 爆炸 Explosion
+
+当发生爆炸时发送（苦力怕、TNT和恶魂火球）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | X | 双精度 Double | |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | Y | 双精度 Double | |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | Z | 双精度 Double | |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 玩家速度增量 Player Delta Velocity - X | 可选前缀 Prefixed Optional - 双精度 Double | 被爆炸推动的玩家的速度差 Velocity difference of the player being pushed by the explosion。 |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 玩家速度增量 Player Delta Velocity - Y | 可选前缀 Prefixed Optional - 双精度 Double | 同上 |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 玩家速度增量 Player Delta Velocity - Z | 可选前缀 Prefixed Optional - 双精度 Double | 同上 |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 爆炸粒子ID Explosion Particle ID | VarInt | `minecraft:particle_type` 注册表中的ID。 |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 爆炸粒子数据 Explosion Particle Data | 可变 Varies | 粒子 Particles 中指定的粒子数据。 |
+| `0x20`<br/>`explode` | 游戏 Play | 客户端 Client | 爆炸声音 Explosion Sound | ID或声音事件 ID or Sound Event | `minecraft:sound_event` 注册表中的ID，或内联定义。 |
+
+#### 卸载区块 Unload Chunk
+
+告诉客户端卸载区块列。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x21`<br/>`forget_level_chunk` | 游戏 Play | 客户端 Client | 区块Z Chunk Z | 整型 Int | 方块坐标除以16，向下取整 Block coordinate divided by 16, rounded down。 |
+| `0x21`<br/>`forget_level_chunk` | 游戏 Play | 客户端 Client | 区块X Chunk X | 整型 Int | 方块坐标除以16，向下取整 Block coordinate divided by 16, rounded down。 |
+
+注意：顺序是倒置的，因为客户端将此数据包读取为一个大端 big-endian 长整型 Long，其中Z是高32位。
+
+即使给定的区块当前未加载，发送此数据包也是合法的。
+
+#### 游戏事件 Game Event
+
+用于各种游戏事件，例如天气、重生可用性（来自床 bed 和重生锚 respawn anchor）、游戏模式、某些游戏规则和演示 demo 消息。
+
 ---
 
 **翻译进度：第1-5部分完成，第6部分（游戏 Play）进行中**
