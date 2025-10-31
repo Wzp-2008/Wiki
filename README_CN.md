@@ -1510,3 +1510,172 @@ if (playerDistance < distance) {
 | 游戏模式 Game mode | Unsigned Byte | 0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator |
 | 上一个游戏模式 Previous Game mode | Byte | -1: 未定义 Undefined（可能永远不会使用），0: 生存 Survival, 1: 创造 Creative, 2: 冒险 Adventure, 3: 旁观 Spectator |
 
+| 是否为调试 Is Debug | Boolean | 如果世界是调试模式世界则为true；调试模式世界无法修改并具有预定义的方块 True if the world is a debug mode world; debug mode worlds cannot be modified and have predefined blocks |
+| 是否为平坦 Is Flat | Boolean | 如果世界是超平坦世界则为true；平坦世界具有不同的虚空迷雾，地平线在y=0而不是y=63 True if the world is a superflat world; flat worlds have different void fog and a horizon at y=0 instead of y=63 |
+| 有死亡位置 Has death location | Boolean | 如果为true，则存在接下来的两个字段 If true, then the next two fields are present |
+| 死亡维度名称 Death dimension name | Optional Identifier | 玩家死亡所在维度的名称 Name of the dimension the player died in |
+| 死亡位置 Death location | Optional Position | 玩家死亡的位置 The location that the player died at |
+| 传送门冷却 Portal cooldown | VarInt | 玩家可以再次使用上次使用的传送门之前的刻数。看起来是修复MC-180的尝试 The number of ticks until the player can use the last used portal again. Looks like it's an attempt to fix MC-180 |
+| 海平面 Sea level | VarInt | |
+| 强制安全聊天 Enforces Secure Chat | Boolean | |
+
+### 地图数据 Map Data
+
+更新地图物品上的矩形区域 Updates a rectangular area on a map item。
+
+**数据包ID Packet ID:** `0x2C`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 地图ID Map ID | VarInt | 正在修改的地图的地图ID Map ID of the map being modified |
+| 缩放级别 Scale | Byte | 从0表示完全放大的地图（每像素1个方块）到4表示完全缩小的地图（每像素16个方块） From 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel) |
+| 已锁定 Locked | Boolean | 如果地图已在制图台中锁定则为true True if the map has been locked in a cartography table |
+| 图标 Icons | Prefixed Optional Prefixed Array | |
+| - 类型 Type | VarInt Enum | 见下文 See below |
+| - X | Byte | 地图坐标：-128表示最左侧，+127表示最右侧 Map coordinates: -128 for furthest left, +127 for furthest right |
+| - Z | Byte | 地图坐标：-128表示最上方，+127表示最下方 Map coordinates: -128 for highest, +127 for lowest |
+| - 方向 Direction | Byte | 0-15 |
+| - 显示名称 Display Name | Prefixed Optional Text Component | |
+| 颜色补丁 Color Patch | | |
+| - 列数 Columns | Unsigned Byte | 更新的列数 Number of columns updated |
+| - 行数 Rows | Optional Unsigned Byte | 仅当列数大于0时；更新的行数 Only if Columns is more than 0; number of rows updated |
+| - X | Optional Unsigned Byte | 仅当列数大于0时；最西列的x偏移 Only if Columns is more than 0; x offset of the westernmost column |
+| - Z | Optional Unsigned Byte | 仅当列数大于0时；最北行的z偏移 Only if Columns is more than 0; z offset of the northernmost row |
+| - 长度 Length | Optional VarInt | 仅当列数大于0时；以下数组的长度 Only if Columns is more than 0; length of the following array |
+| - 数据 Data | Optional Array of Unsigned Byte | 仅当列数大于0时；详见地图物品格式 Only if Columns is more than 0; see Map item format |
+
+对于图标类型 For Icon Type：
+
+| 图标类型 Icon type | 名称 Name |
+|---|---|
+| 0 | 白色箭头（玩家） White arrow (player) |
+| 1 | 绿色箭头（物品展示框） Green arrow (item frame) |
+| 2 | 红色箭头 Red arrow |
+| 3 | 蓝色箭头 Blue arrow |
+| 4 | 白色十字 White cross |
+| 5 | 红色指针 Red pointer |
+| 6 | 白色圆圈（玩家在附近） White circle (player off map) |
+| 7 | 小白色圆圈（远离地图的玩家） Small white circle (far player off map) |
+| 8 | 宅邸 Mansion |
+| 9 | 纪念碑 Monument |
+| 10 | 白色旗帜 White banner |
+| 11 | 橙色旗帜 Orange banner |
+| 12 | 品红色旗帜 Magenta banner |
+| 13 | 淡蓝色旗帜 Light blue banner |
+| 14 | 黄色旗帜 Yellow banner |
+| 15 | 黄绿色旗帜 Lime banner |
+| 16 | 粉红色旗帜 Pink banner |
+| 17 | 灰色旗帜 Gray banner |
+| 18 | 淡灰色旗帜 Light gray banner |
+| 19 | 青色旗帜 Cyan banner |
+| 20 | 紫色旗帜 Purple banner |
+| 21 | 蓝色旗帜 Blue banner |
+| 22 | 棕色旗帜 Brown banner |
+| 23 | 绿色旗帜 Green banner |
+| 24 | 红色旗帜 Red banner |
+| 25 | 黑色旗帜 Black banner |
+| 26 | 藏宝点 Treasure marker |
+| 27 | 红色X Red X |
+| 28 | 村庄沙漠房屋 Village desert house |
+| 29 | 村庄平原房屋 Village plains house |
+| 30 | 村庄热带草原房屋 Village savanna house |
+| 31 | 村庄针叶林房屋 Village taiga house |
+| 32 | 村庄针叶林房屋 Village tundra house |
+| 33 | 丛林神庙 Jungle temple |
+| 34 | 沼泽小屋 Swamp hut |
+| 35 | 试炼密室 Trial chambers |
+
+### 商户交易 Merchant Offers
+
+更新村民和流浪商人的交易列表 Updates the trades available from a villager or wandering trader。
+
+**数据包ID Packet ID:** `0x2D`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 窗口ID Window ID | VarInt | 打开的窗口的ID；这是一个int而不是byte The ID of the window that is open; this is an int rather than a byte |
+| 交易 Trades | Prefixed Array | |
+| - 输入物品1 Input item 1 | Trade Item | 见下文。玩家必须为此村民交易提供的第一个物品。物品堆栈的数量是此交易的默认"价格" See below. The first item the player has to supply for this villager trade. The count of the item stack is the default "price" of this trade |
+| - 输出物品 Output item | Slot | 玩家将从此村民交易中获得的物品 The item the player will receive from this villager trade |
+| - 输入物品2 Input item 2 | Prefixed Optional Trade Item | 玩家必须为此村民交易提供的第二个物品 The second item the player has to supply for this villager trade |
+| - 交易已禁用 Trade disabled | Boolean | 如果交易被禁用则为true；如果交易被启用则为false True if the trade is disabled; false if the trade is enabled |
+| - 交易使用次数 Number of trade uses | Int | 到目前为止交易已被使用的次数。如果等于最大交易次数，客户端将显示红色X Number of times the trade has been used so far. If equal to the maximum number of trades, the client will display a red X |
+| - 最大交易使用次数 Maximum number of trade uses | Int | 此交易在耗尽之前可以使用的次数 Number of times this trade can be used before it's exhausted |
+| - 经验值 XP | Int | 每次使用交易时村民将获得的经验值数量 Amount of XP the villager will earn each time the trade is used |
+| - 特殊价格 Special Price | Int | 可以为零或负数。当物品因玩家声望或其他效果而打折时，该数字被添加到价格中 Can be zero or negative. The number is added to the price when an item is discounted due to player reputation or other effects |
+| - 价格乘数 Price Multiplier | Float | 可以很低（0.05）或很高（0.2）。决定需求、玩家声望和临时效果将如何调整价格 Can be low (0.05) or high (0.2). Determines how much demand, player reputation, and temporary effects will adjust the price |
+| - 需求 Demand | Int | 如果为正数，会导致价格上涨。负值似乎被视为与零相同 If positive, causes the price to increase. Negative values seem to be treated the same as zero |
+| 村民等级 Villager level | VarInt | 显示在交易GUI上；含义来自翻译键 merchant.level. + 等级。1: 新手Novice, 2: 学徒Apprentice, 3: 熟练工Journeyman, 4: 专家Expert, 5: 大师Master |
+| 经验 Experience | VarInt | 此村民的总经验（对于流浪商人始终为0） Total experience for this villager (always 0 for the wandering trader) |
+| 是常规村民 Is regular villager | Boolean | 如果这是常规村民则为true；对于流浪商人为false。当为false时，隐藏村民等级和一些其他GUI元素 True if this is a regular villager; false for the wandering trader. When false, hides the villager level and some other GUI elements |
+| 可以补货 Can restock | Boolean | 对于常规村民为true，对于流浪商人为false。如果为true，当悬停在禁用的交易上时会显示"村民每天最多补货两次"的消息 True for regular villagers and false for the wandering trader. If true, the "Villagers restock up to two times per day." message is displayed when hovering over disabled trades |
+
+### 更新实体位置 Update Entity Position
+
+此数据包由服务器发送，当实体移动少于8个方块时 This packet is sent by the server when an entity moves less than 8 blocks。
+
+**数据包ID Packet ID:** `0x2E`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 实体ID Entity ID | VarInt | |
+| Delta X | Short | 以（当前X * 32 - 上一个X * 32）* 128的形式改变X坐标 Change in X position as (currentX * 32 - prevX * 32) * 128 |
+| Delta Y | Short | 以（当前Y * 32 - 上一个Y * 32）* 128的形式改变Y坐标 Change in Y position as (currentY * 32 - prevY * 32) * 128 |
+| Delta Z | Short | 以（当前Z * 32 - 上一个Z * 32）* 128的形式改变Z坐标 Change in Z position as (currentZ * 32 - prevZ * 32) * 128 |
+| 在地面上 On Ground | Boolean | |
+
+### 更新实体位置和旋转 Update Entity Position and Rotation
+
+此数据包由服务器发送，当实体旋转并移动时 This packet is sent by the server when an entity rotates and moves。
+
+**数据包ID Packet ID:** `0x2F`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 实体ID Entity ID | VarInt | |
+| Delta X | Short | 以（当前X * 32 - 上一个X * 32）* 128的形式改变X坐标 Change in X position as (currentX * 32 - prevX * 32) * 128 |
+| Delta Y | Short | 以（当前Y * 32 - 上一个Y * 32）* 128的形式改变Y坐标 Change in Y position as (currentY * 32 - prevY * 32) * 128 |
+| Delta Z | Short | 以（当前Z * 32 - 上一个Z * 32）* 128的形式改变Z坐标 Change in Z position as (currentZ * 32 - prevZ * 32) * 128 |
+| 偏航角 Yaw | Angle | 新角度，而不是增量 New angle, not a delta |
+| 俯仰角 Pitch | Angle | 新角度，而不是增量 New angle, not a delta |
+| 在地面上 On Ground | Boolean | |
+
+### 更新实体旋转 Update Entity Rotation
+
+此数据包由服务器发送，当实体旋转时 This packet is sent by the server when an entity rotates。
+
+**数据包ID Packet ID:** `0x30`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 实体ID Entity ID | VarInt | |
+| 偏航角 Yaw | Angle | 新角度，而不是增量 New angle, not a delta |
+| 俯仰角 Pitch | Angle | 新角度，而不是增量 New angle, not a delta |
+| 在地面上 On Ground | Boolean | |
+
+### 移动载具 Move Vehicle
+
+注意，所有字段都使用绝对位置和角度，而不是相对位置 Note that all fields use absolute positioning and do not allow for relative positioning。
+
+**数据包ID Packet ID:** `0x31`  
+**状态 State:** Play  
+**绑定到 Bound To:** Client 客户端
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| X | Double | 绝对位置（X坐标） Absolute position (X coordinate) |
+| Y | Double | 绝对位置（Y坐标） Absolute position (Y coordinate) |
+| Z | Double | 绝对位置（Z坐标） Absolute position (Z coordinate) |
+| 偏航角 Yaw | Float | 绝对旋转，角度 Absolute rotation on the vertical axis, in degrees |
+| 俯仰角 Pitch | Float | 绝对旋转，角度 Absolute rotation on the horizontal axis, in degrees |
+
