@@ -1212,6 +1212,148 @@ Boss栏动作：
 
 用于各种游戏事件，例如天气、重生可用性（来自床 bed 和重生锚 respawn anchor）、游戏模式、某些游戏规则和演示 demo 消息。
 
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x22`<br/>`game_event` | 游戏 Play | 客户端 Client | 事件 Event | 无符号字节 Unsigned Byte | 见下文。 |
+| `0x22`<br/>`game_event` | 游戏 Play | 客户端 Client | 值 Value | 浮点型 Float | 取决于事件 Depends on Event。 |
+
+事件 Events：
+
+| 事件 Event | 效果 Effect | 值 Value |
+|------|------|------|
+| 0 | 无重生方块可用 No respawn block available | 注意：向玩家显示消息'block.minecraft.spawn.not_valid'（您没有家床或充能重生锚，或它被阻挡了）Note: Displays message to the player。 |
+| 1 | 开始下雨 Begin raining | |
+| 2 | 结束下雨 End raining | |
+| 3 | 更改游戏模式 Change game mode | 0：生存 Survival，1：创造 Creative，2：冒险 Adventure，3：旁观 Spectator。 |
+| 4 | 获胜游戏 Win game | 0：只是重生玩家 Just respawn player。<br/>1：滚动制作人员名单并重生玩家 Roll the credits and respawn player。<br/>注意：当玩家尚未获得进度"结束了？"时，原版服务器仅发送1，否则发送0。 |
+| 5 | 演示事件 Demo event | 0：显示演示欢迎屏幕 Show welcome to demo screen。<br/>101：告知移动控制 Tell movement controls。<br/>102：告知跳跃控制 Tell jump control。<br/>103：告知物品栏控制 Tell inventory control。<br/>104：告知演示结束并打印有关如何截图的消息 Tell that the demo is over and print a message about how to take a screenshot。 |
+| 6 | 箭击中玩家 Arrow hit player | 注意：当任何玩家被箭击中时发送 Sent when any player is struck by an arrow。 |
+| 7 | 降雨等级变化 Rain level change | 注意：似乎会改变天空颜色和光照 Seems to change both sky color and lighting。<br/>降雨等级范围从0到1 Rain level ranging from 0 to 1。 |
+| 8 | 雷暴等级变化 Thunder level change | 注意：似乎会改变天空颜色和光照（与降雨等级变化相同，但不会开始下雨）。原版客户端也需要下雨才能渲染 It also requires rain to render by vanilla client。<br/>雷暴等级范围从0到1 Thunder level ranging from 0 to 1。 |
+| 9 | 播放河豚刺痛声音 Play pufferfish sting sound | |
+| 10 | 播放远古守卫者生物出现（效果和声音） Play elder guardian mob appearance (effect and sound) | |
+| 11 | 启用重生屏幕 Enable respawn screen | 0：启用重生屏幕 Enable respawn screen。<br/>1：立即重生 Immediately respawn（当`doImmediateRespawn`游戏规则更改时发送）。 |
+| 12 | 限制合成 Limited crafting | 0：禁用限制合成 Disable limited crafting。<br/>1：启用限制合成 Enable limited crafting（当`doLimitedCrafting`游戏规则更改时发送）。 |
+| 13 | 开始等待关卡区块 Start waiting for level chunks | 指示客户端开始关卡区块的等待过程 Instructs the client to begin the waiting process for the level chunks。<br/>在客户端上清除关卡并重新发送后（在第一次或后续重新配置期间），由服务器发送 Sent by the server after the level is cleared on the client and is being re-sent。 |
+
+#### 打开马屏幕 Open Horse Screen
+
+此数据包专门用于打开马GUI。打开屏幕 Open Screen 用于所有其他GUI。如果实体ID不指向类马动物，客户端将不会打开物品栏。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x23`<br/>`horse_screen_open` | 游戏 Play | 客户端 Client | 窗口ID Window ID | VarInt | 与打开屏幕 Open Screen 的字段相同。 |
+| `0x23`<br/>`horse_screen_open` | 游戏 Play | 客户端 Client | 物品栏列数 Inventory columns count | VarInt | GUI中存在多少列马物品栏槽位，每列3个槽位 How many columns of horse inventory slots exist in the GUI, 3 slots per column。 |
+| `0x23`<br/>`horse_screen_open` | 游戏 Play | 客户端 Client | 实体ID Entity ID | 整型 Int | GUI的"所有者"实体。如果所有者实体死亡或被清除，客户端应关闭GUI The "owner" entity of the GUI。 |
+
+#### 受伤动画 Hurt Animation
+
+为受到伤害的实体播放摇晃动画 Plays a bobbing animation for the entity receiving damage。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x24`<br/>`hurt_animation` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 受到伤害的实体的ID The ID of the entity taking damage |
+| `0x24`<br/>`hurt_animation` | 游戏 Play | 客户端 Client | 偏航角 Yaw | 浮点型 Float | 相对于实体，伤害来自的方向 The direction the damage is coming from in relation to the entity |
+
+#### 初始化世界边界 Initialize World Border
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | X | 双精度 Double | |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | Z | 双精度 Double | |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 旧直径 Old Diameter | 双精度 Double | 世界边界单边的当前长度，以米为单位 Current length of a single side of the world border, in meters。 |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 新直径 New Diameter | 双精度 Double | 世界边界单边的目标长度，以米为单位 Target length of a single side of the world border, in meters。 |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 速度 Speed | VarLong | 达到新直径的实时毫秒数 Number of real-time milliseconds until New Diameter is reached。原版服务器似乎不将世界边界速度同步到游戏刻，因此它会与服务器延迟不同步。如果世界边界未移动，则设置为0。 |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 传送门传送边界 Portal Teleport Boundary | VarInt | 传送门传送产生的坐标限制为±值 Resulting coordinates from a portal teleport are limited to ±value。通常为29999984。 |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 警告方块 Warning Blocks | VarInt | 以米为单位 In meters。 |
+| `0x25`<br/>`initialize_border` | 游戏 Play | 客户端 Client | 警告时间 Warning Time | VarInt | 以秒为单位，由`/worldborder warning time`设置 In seconds as set by `/worldborder warning time`。 |
+
+原版客户端通过比较警告距离或以下两者中较低者（当前直径到目标直径的距离或边界在warningTime秒后将到达的位置）中较高者来确定警告的显示强度。伪代码：
+
+```java
+distance = max(min(resizeSpeed * 1000 * warningTime, abs(targetDiameter - currentDiameter)), warningDistance);
+if (playerDistance < distance) {
+    warning = 1.0 - playerDistance / distance;
+} else {
+    warning = 0.0;
+}
+```
+
+#### 客户端绑定保持连接（游戏） Clientbound Keep Alive (play)
+
+服务器将经常发出保持连接，每个都包含一个随机ID。客户端必须使用相同的有效载荷进行响应（请参阅服务器绑定保持连接 Serverbound Keep Alive）。如果客户端在发送后15秒内未响应保持连接数据包，服务器将踢出客户端。反之，如果服务器在20秒内未发送任何保持连接，客户端将断开连接并产生"Timed out"异常。
+
+原版服务器使用与系统相关的时间（以毫秒为单位）生成保持连接ID值。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x26`<br/>`keep_alive` | 游戏 Play | 客户端 Client | 保持连接ID Keep Alive ID | 长整型 Long | |
+
+#### 区块数据和更新光照 Chunk Data and Update Light
+
+当区块进入客户端的视距时发送，指定其地形、光照和方块实体。
+
+区块必须在之前使用设置中心区块 Set Center Chunk 指定的视图区域内；有关详细信息，请参阅该数据包。
+
+在此数据包中发送所有方块实体不是严格必要的；稍后使用方块实体数据 Block Entity Data 发送它们仍然是合法的。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x27`<br/>`level_chunk_with_light` | 游戏 Play | 客户端 Client | 区块X Chunk X | 整型 Int | 区块坐标（方块坐标除以16，向下取整） Chunk coordinate (block coordinate divided by 16, rounded down) |
+| `0x27`<br/>`level_chunk_with_light` | 游戏 Play | 客户端 Client | 区块Z Chunk Z | 整型 Int | 区块坐标（方块坐标除以16，向下取整） Chunk coordinate (block coordinate divided by 16, rounded down) |
+| `0x27`<br/>`level_chunk_with_light` | 游戏 Play | 客户端 Client | 数据 Data | 区块数据 Chunk Data | |
+| `0x27`<br/>`level_chunk_with_light` | 游戏 Play | 客户端 Client | 光照 Light | 光照数据 Light Data | |
+
+与使用相同格式的更新光照 Update Light 数据包不同，在方块光照或天空光照掩码中将对应于某个部分的位设置为0似乎并不有用，测试结果高度不一致。
+
+#### 世界事件 World Event
+
+当客户端播放声音或粒子效果时发送。
+
+默认情况下，Minecraft客户端根据距离调整音效的音量。最后的布尔字段用于禁用此功能，而是从正确方向的2个方块外播放效果。目前，这仅用于效果1023（凋灵生成）、效果1028（末影龙死亡）和效果1038（末地传送门打开）；在其他效果上被忽略。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x28`<br/>`level_event` | 游戏 Play | 客户端 Client | 事件 Event | 整型 Int | 事件，见下文 The event, see below。 |
+| `0x28`<br/>`level_event` | 游戏 Play | 客户端 Client | 位置 Location | 位置 Position | 事件的位置 The location of the event。 |
+| `0x28`<br/>`level_event` | 游戏 Play | 客户端 Client | 数据 Data | 整型 Int | 某些事件的额外数据，见下文 Extra data for certain events, see below。 |
+| `0x28`<br/>`level_event` | 游戏 Play | 客户端 Client | 禁用相对音量 Disable Relative Volume | 布尔值 Boolean | 见上文 See above。 |
+
+事件 Events：
+
+| ID | 名称 Name | 数据 Data |
+|----|------|------|
+| **声音 Sound** | | |
+| 1000 | 发射器发射 Dispenser dispenses | |
+| 1001 | 发射器发射失败 Dispenser fails to dispense | |
+| 1002 | 发射器射击 Dispenser shoots | |
+| 1004 | 烟花发射 Firework shot | |
+| 1009 | 火熄灭 Fire extinguished | |
+| 1010 | 播放唱片 Play record | `minecraft:item` 注册表中的ID，对应于唱片物品 record item。如果ID不对应唱片，则忽略数据包。在给定位置播放的任何唱片都会被覆盖。 |
+| 1011 | 停止唱片 Stop record | |
+| 1015 | 恶魂警告 Ghast warns | |
+| 1016 | 恶魂射击 Ghast shoots | |
+| 1017 | 末影龙射击 Ender dragon shoots | |
+| 1018 | 烈焰人射击 Blaze shoots | |
+| 1019 | 僵尸攻击木门 Zombie attacks wooden door | |
+| 1020 | 僵尸攻击铁门 Zombie attacks iron door | |
+| 1021 | 僵尸破坏木门 Zombie breaks wooden door | |
+| 1022 | 凋灵破坏方块 Wither breaks block | |
+| 1023 | 凋灵生成 Wither spawned | |
+| 1024 | 凋灵射击 Wither shoots | |
+| 1025 | 蝙蝠起飞 Bat takes off | |
+| 1026 | 僵尸感染 Zombie infects | |
+| 1027 | 僵尸村民转化 Zombie villager converted | |
+| 1028 | 末影龙死亡 Ender dragon dies | |
+| 1029 | 铁砧损坏 Anvil destroyed | |
+| 1030 | 铁砧使用 Anvil used | |
+| 1031 | 铁砧落地 Anvil lands | |
+| 1032 | 传送门旅行 Portal travel | |
+| 1033 | 紫颂花生长 Chorus flower grows | |
+| 1034 | 紫颂花死亡 Chorus flower dies | |
+| 1035 | 酿造台酿造 Brewing stand brews | |
+| 1038 | 末地传送门创建 End portal created | |
+
 ---
 
 **翻译进度：第1-5部分完成，第6部分（游戏 Play）进行中**
