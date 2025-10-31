@@ -823,6 +823,85 @@ Minecraft服务器接受来自TCP客户端的连接，并使用数据包与它�
 | `0x09`<br/>`boss_event` | 游戏 Play | 客户端 Client | UUID | UUID | 此栏的唯一ID Unique ID for this bar。 |
 | `0x09`<br/>`boss_event` | 游戏 Play | 客户端 Client | 动作 Action | VarInt枚举 VarInt Enum | 确定剩余数据包的布局。 |
 
+Boss栏动作：
+
+| 动作 Action | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|------|----------|----------|------|
+| 0: 添加 add | 标题 Title | 文本组件 Text Component | |
+| 0: 添加 add | 生命值 Health | 浮点型 Float | 从0到1。大于1的值不会使原版客户端崩溃，并在约1.5时开始渲染第二条生命条的一部分。 |
+| 0: 添加 add | 颜色 Color | VarInt枚举 VarInt Enum | 颜色ID Color ID（见下文）。 |
+| 0: 添加 add | 分段 Division | VarInt枚举 VarInt Enum | 分段类型 Type of division（见下文）。 |
+| 0: 添加 add | 标志 Flags | 无符号字节 Unsigned Byte | 位掩码 Bit mask。0x01：应该使天空变暗，0x02：是龙栏（用于播放末地音乐），0x04：创建雾（以前也由0x02控制）。 |
+| 1: 移除 remove | 无字段 no fields | 无字段 no fields | 移除此Boss栏。 |
+| 2: 更新生命值 update health | 生命值 Health | 浮点型 Float | 如上所述 as above |
+| 3: 更新标题 update title | 标题 Title | 文本组件 Text Component | |
+| 4: 更新样式 update style | 颜色 Color | VarInt枚举 VarInt Enum | 颜色ID Color ID（见下文）。 |
+| 4: 更新样式 update style | 分隔符 Dividers | VarInt枚举 VarInt Enum | 如上所述 as above |
+| 5: 更新标志 update flags | 标志 Flags | 无符号字节 Unsigned Byte | 如上所述 as above |
+
+颜色 Color：
+
+| ID | 颜色 Color |
+|----|------|
+| 0 | 粉红色 Pink |
+| 1 | 蓝色 Blue |
+| 2 | 红色 Red |
+| 3 | 绿色 Green |
+| 4 | 黄色 Yellow |
+| 5 | 紫色 Purple |
+| 6 | 白色 White |
+
+分段类型 Type of division：
+
+| ID | 分段类型 Type of division |
+|----|------|
+| 0 | 无分段 No division |
+| 1 | 6个刻度 6 notches |
+| 2 | 10个刻度 10 notches |
+| 3 | 12个刻度 12 notches |
+| 4 | 20个刻度 20 notches |
+
+#### 更改难度 Change Difficulty
+
+更改客户端选项菜单中的难度设置。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0A`<br/>`change_difficulty` | 游戏 Play | 客户端 Client | 难度 Difficulty | 无符号字节枚举 Unsigned Byte Enum | 0：和平 peaceful，1：简单 easy，2：普通 normal，3：困难 hard。 |
+| `0x0A`<br/>`change_difficulty` | 游戏 Play | 客户端 Client | 难度锁定？ Difficulty locked? | 布尔值 Boolean | |
+
+#### 区块批次完成 Chunk Batch Finished
+
+标记区块批次的结束。原版客户端标记接收此数据包的时间，并计算自区块批次开始 Chunk Batch Start 以来经过的持续时间。服务器使用此持续时间和此数据包中接收的批次大小来估计每个接收区块所经过的毫秒数。然后，此值用于通过公式 `25 / millisPerChunk` 计算每刻 tick 所需的区块数，该数据通过区块批次已接收 Chunk Batch Received 报告给服务器。这可能使用 `25` 而不是正常刻持续时间 `50`，因此区块处理仅使用客户端和网络带宽的一半。
+
+原版客户端使用最近15个批次的样本来估计每个区块的毫秒数。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0B`<br/>`chunk_batch_finished` | 游戏 Play | 客户端 Client | 批次大小 Batch size | VarInt | 区块数量 Number of chunks。 |
+
+#### 区块批次开始 Chunk Batch Start
+
+标记区块批次的开始。原版客户端标记并存储接收此数据包的时间。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0C`<br/>`chunk_batch_start` | 游戏 Play | 客户端 Client | | | 无字段 no fields |
+
+#### 区块生物群系 Chunk Biomes
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x0D`<br/>`chunks_biomes` | 游戏 Play | 客户端 Client | 区块生物群系数据 Chunk biome data - 区块Z Chunk Z | 前缀数组 Prefixed Array - 整型 Int | 区块坐标（方块坐标除以16，向下取整）Chunk coordinate (block coordinate divided by 16, rounded down) |
+| `0x0D`<br/>`chunks_biomes` | 游戏 Play | 客户端 Client | 区块生物群系数据 Chunk biome data - 区块X Chunk X | 前缀数组 Prefixed Array - 整型 Int | 区块坐标（方块坐标除以16，向下取整）Chunk coordinate (block coordinate divided by 16, rounded down) |
+| `0x0D`<br/>`chunks_biomes` | 游戏 Play | 客户端 Client | 区块生物群系数据 Chunk biome data - 数据 Data | 前缀数组 Prefixed Array - 字节前缀数组 Prefixed Array of Byte | 区块数据结构 Chunk data structure，其中区块节 sections 仅包含 `Biomes` 字段 |
+
+注意：X和Z的顺序是倒置的，因为客户端将它们读取为一个大端 big-endian 长整型 Long，其中Z是高32位。
+
+#### 清除标题 Clear Titles
+
+清除客户端当前的标题信息，可选择重置它。
+
 ---
 
 **翻译进度：第1-5部分完成，第6部分（游戏 Play）进行中**
