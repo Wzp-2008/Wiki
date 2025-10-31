@@ -2576,3 +2576,1233 @@ TAG_Compound: none
 ---
 
 以上为客户端绑定 Play 数据包的完整翻译。
+
+### 服务器绑定 Serverbound
+
+#### 确认传送 Confirm Teleportation
+
+由客户端发送，作为同步玩家位置 Synchronize Player Position 数据包的确认。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x00`<br/>资源 resource: `accept_teleportation` | 游戏 Play | 服务器 Server | 传送ID Teleport ID | VarInt | 由同步玩家位置 Synchronize Player Position 数据包给出的ID。 |
+
+#### 查询方块实体标签 Query Block Entity Tag
+
+在查看方块时按下 F3+I 时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x01`<br/>资源 resource: `block_entity_tag_query` | 游戏 Play | 服务器 Server | 事务ID Transaction ID | VarInt | 递增ID，以便客户端可以验证响应是否匹配。 |
+| | | | 位置 Location | Position | 要检查的方块的位置。 |
+
+#### 捆绑物品已选择 Bundle Item Selected
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x02`<br/>资源 resource: `bundle_item_selected` | 游戏 Play | 服务器 Server | 槽位ID Slot ID | VarInt | 捆绑中的槽位。 |
+| | | | 选中的物品ID Selected Item ID | VarInt | 捆绑中的物品。 |
+
+#### 更改难度 Change Difficulty
+
+必须启用难度锁定才会有效。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x03`<br/>资源 resource: `change_difficulty` | 游戏 Play | 服务器 Server | 新难度 New difficulty | Byte | 0: 和平 peaceful, 1: 简单 easy, 2: 普通 normal, 3: 困难 hard。 |
+
+#### 确认消息 Acknowledge Message
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x04`<br/>资源 resource: `chat_ack` | 游戏 Play | 服务器 Server | 消息计数 Message Count | VarInt | |
+
+#### 聊天命令 Chat Command
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x05`<br/>资源 resource: `chat_command` | 游戏 Play | 服务器 Server | 命令 Command | String (256) | 命令（不含斜杠 `/`）。 |
+
+#### 已签名聊天命令 Signed Chat Command
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x06`<br/>资源 resource: `signed_chat_command` | 游戏 Play | 服务器 Server | 命令 Command | String (256) | 命令（不含斜杠 `/`）。 |
+| | | | 时间戳 Timestamp | Long | 自Unix纪元以来的毫秒数。 |
+| | | | 盐 Salt | Long | 用于验证签名哈希的盐。 |
+| | | | 参数签名数组长度 Array Length | VarInt | 参数签名的最大数量为8。 |
+| | | | 参数名称 Argument Name | String (16) | 命令的参数名称。 |
+| | | | 签名 Signature | Byte Array (256) | 参数值的加密签名。 |
+| | | | 已确认消息计数 Message Count | VarInt | |
+| | | | 已确认 Acknowledged | Fixed BitSet (20) | |
+
+#### 聊天消息 Chat Message
+
+用于发送客户端聊天消息。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x07`<br/>资源 resource: `chat` | 游戏 Play | 服务器 Server | 消息 Message | String (256) | |
+
+#### 玩家会话 Player Session
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x08`<br/>资源 resource: `chat_session_update` | 游戏 Play | 服务器 Server | 会话ID Session ID | UUID | |
+| | | | 公钥过期时间 Public Key Expiry Time | Long | Unix时间戳（毫秒）。 |
+| | | | 编码公钥大小 Encoded Public Key Size | VarInt | 以下字节数组的大小。最大长度为512字节。 |
+| | | | 编码公钥 Encoded Public Key | Byte Array (512) | X.509编码的公钥。 |
+| | | | 公钥签名大小 Public Key Signature Size | VarInt | 以下字节数组的大小。最大长度为4096字节。 |
+| | | | 公钥签名 Public Key Signature | Byte Array (4096) | 由Mojang的YggdrasilSessionPublicKey签名的公钥数据和过期时间。 |
+
+#### 区块批次已接收 Chunk Batch Received
+
+通知服务器客户端已完成接收上一个区块批次。服务器使用此信息来调整未来批次发送的速率。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x09`<br/>资源 resource: `chunk_batch_received` | 游戏 Play | 服务器 Server | 批次中区块数 Chunks per tick | Float | 期望的区块每刻发送速率。 |
+
+#### 客户端状态 Client Status
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0A`<br/>资源 resource: `client_command` | 游戏 Play | 服务器 Server | 动作ID Action ID | VarInt Enum | 0: 执行重生 perform respawn, 1: 请求统计信息 request stats。 |
+
+#### 客户端信息(游戏) Client Information (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0B`<br/>资源 resource: `client_information` | 游戏 Play | 服务器 Server | 语言 Locale | String (16) | 例如 en_GB。 |
+| | | | 视距 View Distance | Byte | 客户端渲染距离，以区块为单位。 |
+| | | | 聊天模式 Chat Mode | VarInt Enum | 0: 启用 enabled, 1: 仅命令 commands only, 2: 隐藏 hidden。 |
+| | | | 聊天颜色 Chat Colors | Boolean | 客户端是否有聊天颜色。 |
+| | | | 显示的皮肤部件 Displayed Skin Parts | Unsigned Byte | 位掩码，详见下文。 |
+| | | | 主手 Main Hand | VarInt Enum | 0: 左手 Left, 1: 右手 Right。 |
+| | | | 启用文本过滤 Enable text filtering | Boolean | 在服务器上启用文本过滤。 |
+| | | | 允许服务器列表 Allow server listings | Boolean | 服务器列表是否在多人游戏菜单中显示服务器。 |
+
+显示的皮肤部件 Displayed Skin Parts 字段的位标志如下：
+
+- 位0(0x01): 披风 Cape enabled
+- 位1(0x02): 夹克 Jacket enabled  
+- 位2(0x04): 左袖子 Left Sleeve enabled
+- 位3(0x08): 右袖子 Right Sleeve enabled
+- 位4(0x10): 左裤腿 Left Pants Leg enabled
+- 位5(0x20): 右裤腿 Right Pants Leg enabled
+- 位6(0x40): 帽子 Hat enabled
+
+#### 命令建议请求 Command Suggestions Request
+
+tab自动补全命令时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0C`<br/>资源 resource: `command_suggestion` | 游戏 Play | 服务器 Server | 事务ID Transaction Id | VarInt | 递增计数器。 |
+| | | | 文本 Text | String (32500) | 正在编辑的所有文本。 |
+
+#### 确认配置 Acknowledge Configuration
+
+由客户端发送，以响应开始配置 Start Configuration。此数据包切换连接状态到配置 configuration。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0D`<br/>资源 resource: `configuration_acknowledged` | 游戏 Play | 服务器 Server | 无字段 no fields | | |
+
+#### 点击容器按钮 Click Container Button
+
+在附魔台、信标、织布机、切石机、锻造台、酿造台、铁砧或讲台中使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0E`<br/>资源 resource: `container_button_click` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Byte | 打开窗口的ID。 |
+| | | | 按钮ID Button ID | Byte | 含义取决于容器类型。 |
+
+#### 点击容器 Click Container
+
+此数据包在玩家与容器的槽位进行交互时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0F`<br/>资源 resource: `container_click` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Unsigned Byte | 窗口的ID。 |
+| | | | 状态ID State ID | VarInt | 服务器发送的最后一个Set Container Content的ID。 |
+| | | | 槽位 Slot | Short | 被点击的槽位。 |
+| | | | 按钮 Button | Byte | 使用的鼠标按钮。 |
+| | | | 模式 Mode | VarInt Enum | 点击类型。 |
+| | | | 改变的槽位长度 Length of the array | VarInt | 后续数组的最大值为128。 |
+| | | | - 槽位编号 Slot number | Short | |
+| | | | - 槽位数据 Slot data | Slot | 客户端假设此槽位的新数据。 |
+| | | | 携带的物品 Carried item | Slot | 鼠标携带的物品。必须为空（物品ID = -1）对于创造模式。 |
+
+#### 关闭容器(服务器绑定) Close Container (serverbound)
+
+当玩家关闭容器时，服务器会发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x10`<br/>资源 resource: `container_close` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Unsigned Byte | 这是服务器发送的窗口ID。 |
+
+#### 更改容器槽位状态 Change Container Slot State
+
+此数据包在玩家更改容器槽位的状态时发送（在crafter中）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x11`<br/>资源 resource: `container_slot_state_changed` | 游戏 Play | 服务器 Server | 槽位ID Slot ID | VarInt | 槽位的ID。 |
+| | | | 窗口ID Window ID | VarInt | 窗口的ID。 |
+| | | | 状态 State | Boolean | 新状态：true为启用，false为禁用。 |
+
+#### Cookie响应(游戏) Cookie Response (play)
+
+对Cookie请求(游戏) Cookie Request (play)的响应。响应可能会在以后的时间点发送。响应必须有相同的标识符作为请求。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x12`<br/>资源 resource: `cookie_response` | 游戏 Play | 服务器 Server | 键 Key | Identifier | Cookie的标识符。 |
+| | | | 有效载荷长度 Has Payload | Boolean | Cookie的有效载荷是否存在。 |
+| | | | 有效载荷长度 Payload Length | Optional VarInt | 有效载荷的长度（字节）。 |
+| | | | 有效载荷 Payload | Optional Byte Array (5120) | Cookie的有效载荷，如果存在。 |
+
+#### 服务器绑定插件消息(游戏) Serverbound Plugin Message (play)
+
+主要文章: 插件通道 Plugin channels
+
+允许向服务器发送可选信息。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x13`<br/>资源 resource: `custom_payload` | 游戏 Play | 服务器 Server | 通道 Channel | Identifier | 用于发送数据的通道名称。 |
+| | | | 数据 Data | Byte Array (32767) | 任何数据。 |
+
+#### 调试样本订阅 Debug Sample Subscription
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x14`<br/>资源 resource: `debug_sample_subscription` | 游戏 Play | 服务器 Server | 样本类型 Sample Type | VarInt Enum | 要订阅的调试样本类型。0: 刻时间 Tick time。 |
+
+#### 编辑书 Edit Book
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x15`<br/>资源 resource: `edit_book` | 游戏 Play | 服务器 Server | 槽位 Slot | VarInt | 拿着书的槽位编号。0表示主手，1表示副手。 |
+| | | | 条目数量 Count | VarInt | 后续数组的元素数。最多为200。 |
+| | | | 条目 Entries | String (8192) 数组 Array of String (8192) | 文本从每页。 |
+| | | | 有标题 Has title | Boolean | 如果为true，则有下一个字段。 |
+| | | | 标题 Title | Optional String (128) | 新书的标题。 |
+
+#### 查询实体标签 Query Entity Tag
+
+在对实体按下F3+I时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x16`<br/>资源 resource: `entity_tag_query` | 游戏 Play | 服务器 Server | 事务ID Transaction ID | VarInt | 递增整数，以便客户端可以验证响应是否匹配。 |
+| | | | 实体ID Entity ID | VarInt | 要查询的实体的ID。 |
+
+#### 交互 Interact
+
+当玩家与实体交互时发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x17`<br/>资源 resource: `interact` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | 交互的实体ID。 |
+| | | | 类型 Type | VarInt Enum | 0: 交互 interact, 1: 攻击 attack, 2: 在特定位置交互 interact at。 |
+| | | | 目标X Target X | Optional Float | 仅当Type为在特定位置交互时。 |
+| | | | 目标Y Target Y | Optional Float | 仅当Type为在特定位置交互时。 |
+| | | | 目标Z Target Z | Optional Float | 仅当Type为在特定位置交互时。 |
+| | | | 手 Hand | Optional VarInt Enum | 仅当Type为交互或在特定位置交互时。0: 主手 main hand, 1: 副手 off hand。 |
+| | | | 潜行 Sneaking | Boolean | 玩家是否潜行。 |
+
+#### 拼图生成 Jigsaw Generate
+
+服务器发送生成的完成结构后，通过更新拼图方块 Update Jigsaw Block 来回复。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x18`<br/>资源 resource: `jigsaw_generate` | 游戏 Play | 服务器 Server | 位置 Location | Position | 拼图方块位置。 |
+| | | | 级别 Levels | VarInt | 要生成的级别数。 |
+| | | | 保留拼图 Keep Jigsaws | Boolean | |
+
+#### 服务器绑定保持连接(游戏) Serverbound Keep Alive (play)
+
+服务器在客户端通过超时断开连接之前会等待客户端发送相同的keep alive包。服务器将每30秒尝试发送一次Keep Alive包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x19`<br/>资源 resource: `keep_alive` | 游戏 Play | 服务器 Server | Keep Alive ID | Long | |
+
+#### 锁定难度 Lock Difficulty
+
+必须启用难度锁定才会生效。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1A`<br/>资源 resource: `lock_difficulty` | 游戏 Play | 服务器 Server | 已锁定 Locked | Boolean | |
+
+#### 设置玩家位置 Set Player Position
+
+对x, y或z值的改变大于8个区块时，服务器会认为玩家在作弊并踢出玩家。同时，如果y或z的固定点移动距离超过3.2个区块，则服务器也会认为玩家在作弊并踢出玩家。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1B`<br/>资源 resource: `move_player_pos` | 游戏 Play | 服务器 Server | X | Double | 玩家的绝对位置。 |
+| | | | 脚Y Feet Y | Double | 玩家的脚的绝对位置，通常是头Y - 1.62。 |
+| | | | Z | Double | 玩家的绝对位置。 |
+| | | | 在地面上 On Ground | Boolean | 玩家是否在地面上。 |
+
+#### 设置玩家位置和旋转 Set Player Position and Rotation
+
+对x, y或z值的改变大于8个区块时，服务器会认为玩家在作弊并踢出玩家。同时，如果y或z的固定点移动距离超过3.2个区块，则服务器也会认为玩家在作弊并踢出玩家。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1C`<br/>资源 resource: `move_player_pos_rot` | 游戏 Play | 服务器 Server | X | Double | 玩家的绝对位置。 |
+| | | | 脚Y Feet Y | Double | 玩家的脚的绝对位置，通常是头Y - 1.62。 |
+| | | | Z | Double | 玩家的绝对位置。 |
+| | | | 偏航角 Yaw | Float | 玩家左右转头的绝对旋转角度，以度为单位。 |
+| | | | 俯仰角 Pitch | Float | 玩家上下转头的绝对旋转角度，以度为单位。 |
+| | | | 在地面上 On Ground | Boolean | 玩家是否在地面上。 |
+
+#### 设置玩家旋转 Set Player Rotation
+
+更新玩家视角方向。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1D`<br/>资源 resource: `move_player_rot` | 游戏 Play | 服务器 Server | 偏航角 Yaw | Float | 玩家左右转头的绝对旋转角度，以度为单位。 |
+| | | | 俯仰角 Pitch | Float | 玩家上下转头的绝对旋转角度，以度为单位。 |
+| | | | 在地面上 On Ground | Boolean | 玩家是否在地面上。 |
+
+#### 设置玩家在地面 Set Player On Ground
+
+此数据包以及设置玩家位置 Set Player Position, 设置玩家旋转 Set Player Rotation, 和设置玩家位置和旋转 Set Player Position and Rotation 被称为"移动数据包"。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1E`<br/>资源 resource: `move_player_status_only` | 游戏 Play | 服务器 Server | 在地面上 On Ground | Boolean | 玩家是否在地面上。 |
+
+#### 移动载具(服务器绑定) Move Vehicle (serverbound)
+
+当玩家移动载具时发送；另见移动载具(客户端绑定) Move Vehicle (clientbound)。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1F`<br/>资源 resource: `move_vehicle` | 游戏 Play | 服务器 Server | X | Double | 载具的绝对位置。 |
+| | | | Y | Double | 载具的绝对位置。 |
+| | | | Z | Double | 载具的绝对位置。 |
+| | | | 偏航角 Yaw | Float | 载具的绝对旋转角度，以度为单位。 |
+| | | | 俯仰角 Pitch | Float | 载具的绝对旋转角度，以度为单位。 |
+
+#### 划船 Paddle Boat
+
+用于在没有控制杆的情况下挥舞手臂/移动船桨。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x20`<br/>资源 resource: `paddle_boat` | 游戏 Play | 服务器 Server | 左桨转动 Left paddle turning | Boolean | |
+| | | | 右桨转动 Right paddle turning | Boolean | |
+
+#### 拾取物品 Pick Item
+
+用于在创造模式物品栏中交换主手和副手槽位中的物品。在创造模式物品栏界面中使用选取方块(中键)时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x21`<br/>资源 resource: `pick_item` | 游戏 Play | 服务器 Server | 槽位待使用 Slot to use | VarInt | 另请参阅物品栏 Inventory。 |
+
+#### Ping请求(游戏) Ping Request (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x22`<br/>资源 resource: `ping_request` | 游戏 Play | 服务器 Server | 时间 Time | Long | 毫秒时间戳。 |
+
+#### 放置配方 Place Recipe
+
+当玩家在带有配方书的GUI(例如合成台)中按下绿色配方按钮时，会发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x23`<br/>资源 resource: `place_recipe` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Byte | |
+| | | | 配方 Recipe | Identifier | 配方ID。 |
+| | | | 制作所有 Make all | Boolean | 尽可能多地制作配方。 |
+
+#### 玩家能力(服务器绑定) Player Abilities (serverbound)
+
+玩家能力的可修改字段是飞行标志。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x24`<br/>资源 resource: `player_abilities` | 游戏 Play | 服务器 Server | 标志 Flags | Byte | 位字段，见下文。 |
+
+标志 Flags:
+
+| 字段 Field | 位 Bit |
+|---|---|
+| 飞行中 Flying | 0x02 |
+
+#### 玩家动作 Player Action
+
+当玩家挖掘、取消挖掘或完成挖掘时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x25`<br/>资源 resource: `player_action` | 游戏 Play | 服务器 Server | 状态 Status | VarInt Enum | 要执行的操作，见下文。 |
+| | | | 位置 Location | Position | 方块位置。 |
+| | | | 面 Face | Byte Enum | 被挖掘的方块的面。 |
+| | | | 序列 Sequence | VarInt | |
+
+状态 Status可以是以下之一:
+
+| 值 Value | 含义 Meaning | 说明 Notes |
+|---|---|---|
+| 0 | 开始挖掘方块 Started digging | 玩家开始挖掘。 |
+| 1 | 取消挖掘 Cancelled digging | 玩家在完成挖掘之前取消。 |
+| 2 | 完成挖掘方块 Finished digging | 告诉服务器完成了挖掘。 |
+| 3 | 丢弃物品堆 Drop item stack | 丢弃整个物品堆。 |
+| 4 | 丢弃物品 Drop item | 从物品堆丢弃一个物品。 |
+| 5 | 释放使用物品 Release use item | 标示玩家完成使用物品（例如弓箭）。 |
+| 6 | 交换手中物品 Swap item in hand | 主手和副手交换。 |
+
+面 Face是玩家挖掘的方块的面，可以是以下之一:
+
+| 值 Value | 偏移量 Offset | 面 Face |
+|---|---|---|
+| 0 | -Y | 底部 Bottom |
+| 1 | +Y | 顶部 Top |
+| 2 | -Z | 北 North |
+| 3 | +Z | 南 South |
+| 4 | -X | 西 West |
+| 5 | +X | 东 East |
+
+#### 玩家命令 Player Command
+
+当玩家开始/停止飞行或潜行时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x26`<br/>资源 resource: `player_command` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | 玩家ID。 |
+| | | | 动作ID Action ID | VarInt Enum | 要执行的动作，见下文。 |
+| | | | 跳跃加成 Jump Boost | VarInt | 仅在骑马时使用，范围从0到100。 |
+
+动作ID Action ID可以是以下之一:
+
+| ID | 动作 Action |
+|---|---|
+| 0 | 开始潜行 Start sneaking |
+| 1 | 停止潜行 Stop sneaking |
+| 2 | 离开床 Leave bed |
+| 3 | 开始疾跑 Start sprinting |
+| 4 | 停止疾跑 Stop sprinting |
+| 5 | 开始骑马跳跃 Start jump with horse |
+| 6 | 停止骑马跳跃 Stop jump with horse |
+| 7 | 打开载具物品栏 Open vehicle inventory |
+| 8 | 开始飞行鞘翅 Start flying with elytra |
+
+#### 玩家输入 Player Input
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x27`<br/>资源 resource: `player_input` | 游戏 Play | 服务器 Server | 侧向 Sideways | Float | 正值表示向左。 |
+| | | | 前进 Forward | Float | 正值表示向前。 |
+| | | | 标志 Flags | Unsigned Byte | 位掩码。0x1: 跳跃 jump, 0x2: 卸载 unmount。 |
+
+#### Pong(游戏) Pong (play)
+
+对Ping Request(play) Ping Request(play)的响应。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x28`<br/>资源 resource: `pong` | 游戏 Play | 服务器 Server | ID | Int | 来自请求的相应ID。 |
+
+#### 更改配方书设置 Change Recipe Book Settings
+
+替换已弃用的配方书数据 Recipe Book Data，没有菜单。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x29`<br/>资源 resource: `recipe_book_change_settings` | 游戏 Play | 服务器 Server | 书本ID Book ID | VarInt Enum | 0: 合成 crafting, 1: 熔炉 furnace, 2: 高炉 blast furnace, 3: 烟熏炉 smoker。 |
+| | | | 书本打开 Book Open | Boolean | |
+| | | | 过滤开启 Filter Active | Boolean | |
+
+#### 设置已查看配方 Set Seen Recipe
+
+在配方书中点击配方时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2A`<br/>资源 resource: `recipe_book_seen_recipe` | 游戏 Play | 服务器 Server | 配方ID Recipe ID | Identifier | |
+
+#### 重命名物品 Rename Item
+
+当在铁砧UI中重命名物品时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2B`<br/>资源 resource: `rename_item` | 游戏 Play | 服务器 Server | 物品名称 Item name | String (32767) | 铁砧中物品的新名称。 |
+
+#### 资源包响应(服务器绑定) Resource Pack Response (serverbound)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2C`<br/>资源 resource: `resource_pack` | 游戏 Play | 服务器 Server | UUID | UUID | 资源包的唯一标识符。 |
+| | | | 结果 Result | VarInt Enum | 0: 成功加载 successfully downloaded, 1: 拒绝 declined, 2: 下载失败 failed to download, 3: 接受 accepted, 4: 无效URL invalid URL, 5: 重新加载失败 failed to reload, 6: 丢弃 discarded。 |
+
+#### 已查看进度 Seen Advancements
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2D`<br/>资源 resource: `seen_advancements` | 游戏 Play | 服务器 Server | 动作 Action | VarInt Enum | 0: 打开的标签 Opened tab, 1: 关闭屏幕 Closed screen。 |
+| | | | 标签ID Tab ID | Optional Identifier | 仅当动作 Action 为打开的标签 Opened tab 时存在。 |
+
+#### 选择交易 Select Trade
+
+当玩家选择商户的特定交易选项时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2E`<br/>资源 resource: `select_trade` | 游戏 Play | 服务器 Server | 选中的槽位 Selected slot | VarInt | 选中的交易，从0开始。 |
+
+#### 设置信标效果 Set Beacon Effect
+
+修改信标 Beacon 提供的效果。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2F`<br/>资源 resource: `set_beacon` | 游戏 Play | 服务器 Server | 有主效果 Has Primary Effect | Boolean | |
+| | | | 主效果 Primary Effect | Optional VarInt | 主要效果的ID；如果Has Primary Effect为false，则不发送。 |
+| | | | 有次效果 Has Secondary Effect | Boolean | |
+| | | | 次效果 Secondary Effect | Optional VarInt | 次要效果的ID；如果Has Secondary Effect为false，则不发送。 |
+
+#### 设置手持物品(服务器绑定) Set Held Item (serverbound)
+
+在玩家更改物品栏中选中的槽位时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x30`<br/>资源 resource: `set_carried_item` | 游戏 Play | 服务器 Server | 槽位 Slot | Short | 玩家选中的槽位(0-8)。 |
+
+#### 编程命令方块 Program Command Block
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x31`<br/>资源 resource: `set_command_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | |
+| | | | 命令 Command | String (32767) | |
+| | | | 模式 Mode | VarInt Enum | 0: 序列 SEQUENCE, 1: 自动 AUTO, 2: 红石 REDSTONE。 |
+| | | | 标志 Flags | Byte | 0x01: 跟踪输出 Track Output (如果为false, 命令方块输出将被清除); 0x02: 条件 Is conditional; 0x04: 自动 Automatic。 |
+
+#### 编程命令方块矿车 Program Command Block Minecart
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x32`<br/>资源 resource: `set_command_minecart` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | |
+| | | | 命令 Command | String (32767) | |
+| | | | 跟踪输出 Track Output | Boolean | 如果为false, 命令方块输出将被清除。 |
+
+#### 设置创造模式槽位 Set Creative Mode Slot
+
+当玩家处于创造模式并点击物品栏上的槽位时，服务器可能会发送此数据包以更新物品栏。服务器将仅为创造模式物品栏的槽位(1-45)发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x33`<br/>资源 resource: `set_creative_mode_slot` | 游戏 Play | 服务器 Server | 槽位 Slot | Short | 物品栏槽位。 |
+| | | | 点击的物品 Clicked Item | Slot | |
+
+#### 编程拼图方块 Program Jigsaw Block
+
+由客户端发送以更新拼图方块 Jigsaw Block 的字段。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x34`<br/>资源 resource: `set_jigsaw_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | 正在更新的拼图方块的位置。 |
+| | | | 名称 Name | Identifier | |
+| | | | 目标 Target | Identifier | |
+| | | | 池 Pool | Identifier | |
+| | | | 最终状态 Final state | String (32767) | "minecraft:air"表示删除拼图。 |
+| | | | 关节类型 Joint type | String (32767) | "rollable"表示拼图可以旋转；"aligned"表示拼图必须对齐。 |
+| | | | 选择优先级 Selection priority | VarInt | |
+| | | | 放置优先级 Placement priority | VarInt | |
+
+#### 编程结构方块 Program Structure Block
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x35`<br/>资源 resource: `set_structure_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | 正在更新的结构方块的位置。 |
+| | | | 动作 Action | VarInt Enum | 更新动作: 0表示更新数据, 1表示保存结构, 2表示加载结构, 3表示检测大小。 |
+| | | | 模式 Mode | VarInt Enum | 0: 保存 SAVE, 1: 加载 LOAD, 2: 角落 CORNER, 3: 数据 DATA。 |
+| | | | 名称 Name | String (32767) | |
+| | | | 偏移X Offset X | Byte | -48到48之间。 |
+| | | | 偏移Y Offset Y | Byte | -48到48之间。 |
+| | | | 偏移Z Offset Z | Byte | -48到48之间。 |
+| | | | 大小X Size X | Byte | 0到48之间。 |
+| | | | 大小Y Size Y | Byte | 0到48之间。 |
+| | | | 大小Z Size Z | Byte | 0到48之间。 |
+| | | | 镜像 Mirror | VarInt Enum | 0: 无 NONE, 1: 左右 LEFT_RIGHT, 2: 前后 FRONT_BACK。 |
+| | | | 旋转 Rotation | VarInt Enum | 0: 无 NONE, 1: 顺时针90 CLOCKWISE_90, 2: 顺时针180 CLOCKWISE_180, 3: 逆时针90 COUNTERCLOCKWISE_90。 |
+| | | | 元数据 Metadata | String (128) | |
+| | | | 完整性 Integrity | Float | 0到1之间。 |
+| | | | 种子 Seed | VarLong | |
+| | | | 标志 Flags | Byte | 0x01: 忽略实体 Ignore entities; 0x02: 显示空气 Show air; 0x04: 显示边界框 Show bounding box。 |
+
+#### 更新告示牌 Update Sign
+
+此消息由客户端发送以更新告示牌的文本，或者在按下放置告示牌的"完成"按钮后发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x36`<br/>资源 resource: `sign_update` | 游戏 Play | 服务器 Server | 位置 Location | Position | 正在更新的告示牌的方块坐标。 |
+| | | | 是前面 Is Front Text | Boolean | 正在更新的文字是否在告示牌的前面。 |
+| | | | 第1行 Line 1 | String (384) | 第一行文字。 |
+| | | | 第2行 Line 2 | String (384) | 第二行文字。 |
+| | | | 第3行 Line 3 | String (384) | 第三行文字。 |
+| | | | 第4行 Line 4 | String (384) | 第四行文字。 |
+
+#### 挥动手臂 Swing Arm
+
+当玩家的手臂动画时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x37`<br/>资源 resource: `swing` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 手: 0表示主手, 1表示副手。 |
+
+#### 传送到实体 Teleport To Entity
+
+在观察者模式下传送到另一个实体。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x38`<br/>资源 resource: `teleport_to_entity` | 游戏 Play | 服务器 Server | 目标玩家 Target Player | UUID | 要传送到的玩家的UUID(也可以是实体)。 |
+
+#### 在...上使用物品 Use Item On
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x39`<br/>资源 resource: `use_item_on` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 用于放置方块的手: 0表示主手, 1表示副手。 |
+| | | | 位置 Location | Position | 方块位置。 |
+| | | | 面 Face | VarInt Enum | 光标所在的方块面。 |
+| | | | 光标位置X Cursor Position X | Float | 光标在方块上的位置，从0到1。 |
+| | | | 光标位置Y Cursor Position Y | Float | 光标在方块上的位置，从0到1。 |
+| | | | 光标位置Z Cursor Position Z | Float | 光标在方块上的位置，从0到1。 |
+| | | | 方块内部 Inside block | Boolean | 如果为true, 光标在方块的边界框内。 |
+| | | | 世界边界 World border hit | Boolean | 如果放置会与世界边界碰撞则为true。在这种情况下，不会放置任何方块。 |
+| | | | 序列 Sequence | VarInt | |
+
+#### 使用物品 Use Item
+
+由客户端发送以告诉服务器玩家使用了物品。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x3A`<br/>资源 resource: `use_item` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 手: 0表示主手, 1表示副手。 |
+| | | | 序列 Sequence | VarInt | |
+| | | | 偏航角 Yaw | Float | 玩家的偏航角（以度为单位）。 |
+| | | | 俯仰角 Pitch | Float | 玩家的俯仰角（以度为单位）。 |
+
+---
+
+**完整的协议文档翻译已完成！Minecraft Java版协议的所有核心部分（握手、状态、登录、配置、游戏的客户端绑定和服务器绑定数据包）已全部翻译为中文，并保持双语格式。**
+
+### 服务器绑定 Serverbound
+
+#### 确认传送 Confirm Teleportation
+
+客户端发送此数据包作为对同步玩家位置 Synchronize Player Position 的确认。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x00`<br/>资源 resource: `accept_teleportation` | 游戏 Play | 服务器 Server | 传送ID Teleport ID | VarInt | 由同步玩家位置数据包给出的ID The ID given by the Synchronize Player Position packet. |
+
+#### 查询方块实体标签 Query Block Entity Tag
+
+当按下F3+I键并看着一个方块时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x01`<br/>资源 resource: `block_entity_tag_query` | 游戏 Play | 服务器 Server | 事务ID Transaction ID | VarInt | 一个递增的ID，以便客户端可以验证响应是否匹配 An incremental ID so that the client can verify that the response matches. |
+| | | | 位置 Location | Position | 要检查的方块的位置 The location of the block to check. |
+
+#### 捆绑物品已选择 Bundle Item Selected
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x02`<br/>资源 resource: `bundle_item_selected` | 游戏 Play | 服务器 Server | 捆绑的槽位 Slot of Bundle | VarInt | |
+| | | | 捆绑中的槽位 Slot in Bundle | VarInt | |
+
+#### 更改难度 Change Difficulty
+
+必须启用作弊才能工作。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x03`<br/>资源 resource: `change_difficulty` | 游戏 Play | 服务器 Server | 新难度 New difficulty | Byte | 0: 和平 peaceful, 1: 简单 easy, 2: 普通 normal, 3: 困难 hard. |
+
+#### 确认消息 Acknowledge Message
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x04`<br/>资源 resource: `chat_ack` | 游戏 Play | 服务器 Server | 消息计数 Message Count | VarInt | |
+
+#### 聊天命令 Chat Command
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x05`<br/>资源 resource: `chat_command` | 游戏 Play | 服务器 Server | 命令 Command | String (256) | 不包含前导斜杠 The command typed by the client (without the leading slash). |
+| | | | 时间戳 Timestamp | Long | 命令执行的时间戳 The timestamp that the command was executed. |
+| | | | Salt | Long | 用于生成以下签名的salt The salt for the following signatures. |
+| | | | 参数签名数组长度 Array length | VarInt | 参数签名数组中的元素数量 Number of entries in the following array. 最大为8 Maximum of 8. |
+| | | | 参数签名 Array of Argument Signatures | 参数名 Argument name | String (16) | 被签名的参数名称 The name of the argument that is signed by the following signature. |
+| | | | | 签名 Signature | Byte Array (256) | 参数对应的签名。长度为256或0字节 The signature that verifies the argument. Always 256 bytes and is not length-prefixed. |
+| | | | 消息计数 Message Count | VarInt | |
+| | | | 确认位字段 Acknowledged | Fixed BitSet (20) | |
+
+#### 已签名聊天命令 Signed Chat Command
+
+与聊天命令 Chat Command 相同，但用于防止服务器拦截客户端命令。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x06`<br/>资源 resource: `signed_chat_command` | 游戏 Play | 服务器 Server | 命令 Command | String (256) | |
+| | | | 时间戳 Timestamp | Long | |
+| | | | Salt | Long | |
+| | | | 参数签名数组长度 Array length | VarInt | 最大为8 Maximum of 8. |
+| | | | 参数签名 Array of Argument Signatures | 参数名 Argument name | String (16) | |
+| | | | | 签名 Signature | Byte Array (256) | |
+| | | | 消息计数 Message Count | VarInt | |
+| | | | 确认位字段 Acknowledged | Fixed BitSet (20) | |
+
+#### 聊天消息 Chat Message
+
+用于向服务器发送聊天消息。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x07`<br/>资源 resource: `chat` | 游戏 Play | 服务器 Server | 消息 Message | String (256) | |
+| | | | 时间戳 Timestamp | Long | |
+| | | | Salt | Long | |
+| | | | 是否有签名 Has Signature | Boolean | |
+| | | | 签名 Signature | Optional Byte Array (256) | 仅当有签名为真时存在 Only present if Has Signature is true. |
+| | | | 消息计数 Message Count | VarInt | |
+| | | | 确认位字段 Acknowledged | Fixed BitSet (20) | |
+
+#### 玩家会话 Player Session
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x08`<br/>资源 resource: `chat_session_update` | 游戏 Play | 服务器 Server | 会话ID Session ID | UUID | |
+| | | | 公钥过期时间 Public Key Expires at | Long | 公钥到期的Unix时间（毫秒） The time the play session key expires in Unix epoch milliseconds. |
+| | | | 公钥长度 Public key length | VarInt | 公钥字节长度。最大为512字节 Length of the proceeding public key. Maximum length in Notchian server is 512 bytes. |
+| | | | 公钥 Public Key | Byte Array | 编码的公钥 The public key. |
+| | | | 密钥签名长度 Key Signature length | VarInt | 密钥签名字节长度。最大为4096字节 Length of the proceeding key signature. Maximum length in Notchian server is 4096 bytes. |
+| | | | 密钥签名 Key Signature | Byte Array | 密钥签名字节 The key signature bytes. |
+
+#### 区块批次已接收 Chunk Batch Received
+
+通知服务器客户端何时接收到整个区块批次。服务器使用信息来调整发送的未完成批次的数量。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x09`<br/>资源 resource: `chunk_batch_received` | 游戏 Play | 服务器 Server | 每个批次区块数量 Chunks per tick | Float | 所需的每刻接收的区块数量 Desired chunks per tick. |
+
+#### 客户端状态 Client Status
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0A`<br/>资源 resource: `client_command` | 游戏 Play | 服务器 Server | 动作ID Action ID | VarInt Enum | 见下文 See below. |
+
+动作ID Action ID 值：
+
+| 动作ID Action ID | 动作 Action |
+|---|---|
+| 0 | 执行重生 Perform respawn |
+| 1 | 请求统计 Request stats |
+
+#### 客户端信息（游戏）Client Information (play)
+
+与配置阶段的客户端信息数据包相同。
+
+#### 命令建议请求 Command Suggestions Request
+
+当按下Tab键时发送，以请求可用的自动完成选项。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0C`<br/>资源 resource: `command_suggestion` | 游戏 Play | 服务器 Server | 事务ID Transaction Id | VarInt | 唯一标识符 Unique identifier. |
+| | | | 文本 Text | String (32500) | 命令或命令的一部分。不包含前导斜杠 All text behind the cursor without the / (e.g. if the user typed /foo bar<cursor> then text would be foo bar). |
+
+#### 确认配置 Acknowledge Configuration
+
+从游戏状态发送以确认配置状态。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0D`<br/>资源 resource: `configuration_acknowledged` | 游戏 Play | 服务器 Server | 无字段 no fields | |
+
+此数据包将客户端的状态切换到配置。
+
+#### 点击容器按钮 Click Container Button
+
+当在容器中按下可见按钮/附魔/信标交易选项时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0E`<br/>资源 resource: `container_button_click` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Byte | 打开的窗口的ID The ID of the window. |
+| | | | 按钮ID Button ID | Byte | 按钮的唯一ID Unique ID depending on the type of container. |
+
+#### 点击容器 Click Container
+
+当玩家在容器窗口中点击槽位时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x0F`<br/>资源 resource: `container_click` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Unsigned Byte | 窗口的ID，由服务器在打开容器 Open Screen 中提供 The ID of the window which was clicked. 0 for player inventory. |
+| | | | 状态ID State ID | VarInt | 发送动作的最后一个同步容器状态 Set Container Slot State ID packet的状态ID The last received State ID from either a Set Container Slot or a Set Container Content packet. |
+| | | | 槽位 Slot | Short | 被点击的槽位 The clicked slot number, see below. |
+| | | | 按钮 Button | Byte | 用于按下的按钮 The button used in the click, see below. |
+| | | | 模式 Mode | VarInt Enum | 点击模式，见下文 Inventory operation mode, see below. |
+| | | | 槽位长度 Length of the array | VarInt | 最大为128 Maximum value for Notchian server is 128 slots. |
+| | | | 数组槽位 Array of Slot | 槽位编号 Slot number | Short | |
+| | | | | 槽位数据 Slot data | Slot | 更改后该槽位的新数据 New data for this slot, in the client's opinion; see below. |
+| | | | 携带物品 Carried item | Slot | 鼠标携带的物品（或当前物品），如果玩家没有携带任何物品则为空 Item carried by the cursor. Has to be empty (item ID = -1) for drop mode, otherwise nothing will happen. |
+
+#### 关闭容器（服务器绑定）Close Container (serverbound)
+
+当玩家关闭窗口时从客户端发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x10`<br/>资源 resource: `container_close` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Unsigned Byte | 这是服务器在打开窗口时发送的窗口ID，如果是玩家物品栏则为0 This is the ID of the window that was closed. 0 for player inventory. |
+
+#### 更改容器槽位状态 Change Container Slot State
+
+此数据包在创造模式物品栏屏幕中点击物品槽位时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x11`<br/>资源 resource: `container_slot_state_changed` | 游戏 Play | 服务器 Server | 槽位ID Slot ID | VarInt | |
+| | | | 窗口ID Window ID | VarInt | |
+| | | | 状态 State | Boolean | |
+
+#### Cookie响应（游戏）Cookie Response (play)
+
+响应从服务器接收的Cookie请求（游戏）数据包。Cookie存储在客户端，并且仅在从同一服务器IP地址加入服务器时进行验证。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x12`<br/>资源 resource: `cookie_response` | 游戏 Play | 服务器 Server | 密钥 Key | Identifier | Cookie的标识符 The identifier of the cookie. |
+| | | | 是否有载荷 Has Payload | Boolean | Cookie是否有载荷 The payload is only present if the cookie exists on the client. |
+| | | | 载荷长度 Payload Length | Optional VarInt | Cookie载荷的长度 Length of the following byte array. |
+| | | | 载荷 Payload | Optional Byte Array (5120) | Cookie的数据。可能为空 The data of the cookie, if it exists. |
+
+#### 服务器绑定插件消息（游戏）Serverbound Plugin Message (play)
+
+主要命名空间文章：插件通道 Plugin channels
+
+将插件消息发送到服务器。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x13`<br/>资源 resource: `custom_payload` | 游戏 Play | 服务器 Server | 通道 Channel | Identifier | 使用的通道名称 Name of the plugin channel used to send the data. |
+| | | | 数据 Data | Byte Array (32767) | 通道的任意数据。如果通道不被识别，则忽略 Any data. The length of this array must be inferred from the packet length. |
+
+#### 调试样本订阅 Debug Sample Subscription
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x14`<br/>资源 resource: `debug_sample_subscription` | 游戏 Play | 服务器 Server | 样本类型 Sample Type | VarInt Enum | 0: 刻时间 Tick time |
+
+#### 编辑书 Edit Book
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x15`<br/>资源 resource: `edit_book` | 游戏 Play | 服务器 Server | 槽位 Slot | VarInt | 修改的物品栏槽位。0表示背包中的物品 The hotbar slot where the written book is located. |
+| | | | 计数 Count | VarInt | 以下数组中的元素数量 Number of elements in the following array. Maximum array size is 200. |
+| | | | 条目 Entries | Array (200) of String (8192) | 书的每一页文本 Text from each page. Maximum string length is 8192 chars. |
+| | | | 是否有标题 Has title | Boolean | 如果为真，后面跟标题 If true, the next field is present. |
+| | | | 标题 Title | Optional String (128) | 书的标题 Title of book. |
+
+#### 查询实体标签 Query Entity Tag
+
+当按下F3+I时使用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x16`<br/>资源 resource: `entity_tag_query` | 游戏 Play | 服务器 Server | 事务ID Transaction ID | VarInt | |
+| | | | 实体ID Entity ID | VarInt | |
+
+#### 交互 Interact
+
+当玩家与实体交互时发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x17`<br/>资源 resource: `interact` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | 要交互的实体的ID The ID of the entity to interact with. |
+| | | | 类型 Type | VarInt Enum | 0: 交互 interact, 1: 攻击 attack, 2: 交互目标位置 interact at. |
+| | | | 目标X Target X | Optional Float | 仅当类型为交互目标位置 interact at. |
+| | | | 目标Y Target Y | Optional Float | 仅当类型为交互目标位置 interact at. |
+| | | | 目标Z Target Z | Optional Float | 仅当类型为交互目标位置 interact at. |
+| | | | 手 Hand | Optional VarInt Enum | 仅当类型为交互或交互目标位置。0: 主手 main hand, 1: 副手 off hand. |
+| | | | 是否潜行 Sneaking | Boolean | 玩家是否正在潜行 If the client is sneaking. |
+
+#### 拼图生成 Jigsaw Generate
+
+从拼图方块UI发送以生成拼图结构。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x18`<br/>资源 resource: `jigsaw_generate` | 游戏 Play | 服务器 Server | 位置 Location | Position | 拼图方块位置 Block entity location. |
+| | | | 等级 Levels | VarInt | 要生成的等级数 Value of the levels slider/max depth to generate. |
+| | | | 保留接头 Keep Jigsaws | Boolean | |
+
+#### 服务器绑定保持连接（游戏）Serverbound Keep Alive (play)
+
+服务器会经常发送保持连接数据包，每个数据包都包含一个随机ID。客户端必须使用相同的载荷响应。如果客户端在数据包发送后的15秒内没有响应保持连接数据包，服务器将踢出客户端。反之，如果服务器在20秒内没有发送任何保持连接数据包，客户端将断开连接并抛出超时异常。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x19`<br/>资源 resource: `keep_alive` | 游戏 Play | 服务器 Server | 保持连接ID Keep Alive ID | Long | |
+
+#### 锁定难度 Lock Difficulty
+
+必须启用作弊才能工作。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1A`<br/>资源 resource: `lock_difficulty` | 游戏 Play | 服务器 Server | 已锁定 Locked | Boolean | |
+
+#### 设置玩家位置 Set Player Position
+
+更新玩家在服务器上的X、Y和Z位置的更新。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1B`<br/>资源 resource: `move_player_pos` | 游戏 Play | 服务器 Server | X | Double | 玩家脚的绝对位置 Absolute position. |
+| | | | 脚Y Feet Y | Double | 玩家脚的绝对位置 Absolute feet position, normally Head Y - 1.62. |
+| | | | Z | Double | 玩家脚的绝对位置 Absolute position. |
+| | | | 在地面上 On Ground | Boolean | 如果玩家接触地面（包括水或熔岩上方的空气块）则为真 True if the client is on the ground, false otherwise. |
+
+#### 设置玩家位置和旋转 Set Player Position and Rotation
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1C`<br/>资源 resource: `move_player_pos_rot` | 游戏 Play | 服务器 Server | X | Double | 玩家脚的绝对位置 Absolute position. |
+| | | | 脚Y Feet Y | Double | 玩家脚的绝对位置 Absolute feet position, normally Head Y - 1.62. |
+| | | | Z | Double | 玩家脚的绝对位置 Absolute position. |
+| | | | 偏航 Yaw | Float | 旋转的绝对旋转角度（度），以度数表示 Absolute rotation on the X Axis, in degrees. |
+| | | | 俯仰 Pitch | Float | 旋转的绝对旋转角度（度），以度数表示 Absolute rotation on the Y Axis, in degrees. |
+| | | | 在地面上 On Ground | Boolean | 如果玩家接触地面则为真 True if the client is on the ground, false otherwise. |
+
+#### 设置玩家旋转 Set Player Rotation
+
+更新玩家看的方向。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1D`<br/>资源 resource: `move_player_rot` | 游戏 Play | 服务器 Server | 偏航 Yaw | Float | 旋转的绝对旋转角度（度） Absolute rotation on the X Axis, in degrees. |
+| | | | 俯仰 Pitch | Float | 旋转的绝对旋转角度（度） Absolute rotation on the Y Axis, in degrees. |
+| | | | 在地面上 On Ground | Boolean | 如果玩家接触地面则为真 True if the client is on the ground, false otherwise. |
+
+#### 设置玩家在地面 Set Player On Ground
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1E`<br/>资源 resource: `move_player_status_only` | 游戏 Play | 服务器 Server | 在地面上 On Ground | Boolean | 如果玩家接触地面则为真 True if the client is on the ground, false otherwise. |
+
+#### 移动载具（服务器绑定）Move Vehicle (serverbound)
+
+当玩家移动载具时（如船）发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x1F`<br/>资源 resource: `move_vehicle` | 游戏 Play | 服务器 Server | X | Double | 绝对位置（X坐标） Absolute position (X coordinate). |
+| | | | Y | Double | 绝对位置（Y坐标） Absolute position (Y coordinate). |
+| | | | Z | Double | 绝对位置（Z坐标） Absolute position (Z coordinate). |
+| | | | 偏航 Yaw | Float | 旋转的绝对旋转角度（度） Absolute rotation on the vertical axis, in degrees. |
+| | | | 俯仰 Pitch | Float | 旋转的绝对旋转角度（度） Absolute rotation on the horizontal axis, in degrees. |
+
+#### 划船 Paddle Boat
+
+由客户端使用以通知服务器玩家开始或停止使用桨。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x20`<br/>资源 resource: `paddle_boat` | 游戏 Play | 服务器 Server | 左桨转动 Left paddle turning | Boolean | |
+| | | | 右桨转动 Right paddle turning | Boolean | |
+
+#### 拾取物品 Pick Item
+
+用于在创造模式中交换物品并当Ctrl+Middle Click方块时拾取创造物品。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x21`<br/>资源 resource: `pick_item` | 游戏 Play | 服务器 Server | 槽位使用 Slot to use | VarInt | 参见物品栏 See Inventory. |
+
+#### Ping请求（游戏）Ping Request (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x22`<br/>资源 resource: `ping_request` | 游戏 Play | 服务器 Server | 载荷 Payload | Long | 由响应返回 May be any number. Notchian clients use a system-dependent time value which is counted in milliseconds. |
+
+#### 放置配方 Place Recipe
+
+当玩家在合成台或熔炉UI中点击配方时发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x23`<br/>资源 resource: `place_recipe` | 游戏 Play | 服务器 Server | 窗口ID Window ID | Byte | |
+| | | | 配方 Recipe | Identifier | 一个配方ID A recipe ID. |
+| | | | 全部制作 Make all | Boolean | 影响Shift点击的数量 Affects the amount of items processed; true if shift is down when clicked. |
+
+#### 玩家能力（服务器绑定）Player Abilities (serverbound)
+
+先前称为飞行 Flying。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x24`<br/>资源 resource: `player_abilities` | 游戏 Play | 服务器 Server | 标志 Flags | Byte | 位字段。0x02：正在飞行 is flying. |
+
+#### 玩家动作 Player Action
+
+当玩家挖掘、破坏或射击方块时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x25`<br/>资源 resource: `player_action` | 游戏 Play | 服务器 Server | 状态 Status | VarInt Enum | 玩家执行的动作 See below. |
+| | | | 位置 Location | Position | 方块位置 Block position. |
+| | | | 面 Face | Byte Enum | 被击中的方块的面 The face being hit (see below). |
+| | | | 序列 Sequence | VarInt | |
+
+状态 Status 可以是以下之一：
+
+| 值 Value | 含义 Meaning | 备注 Notes |
+|---|---|---|
+| 0 | 开始挖掘 Started digging | 仅在创造模式下破坏方块 Sent when the player starts digging a block. If the block was instamined or the player is in creative mode, the client will not send Stop Digging; it will only send this packet. |
+| 1 | 取消挖掘 Cancelled digging | 仅当方块未被破坏时发送 Sent when the player lets go of the Mine Block key (default: left click). Face is always set to -Y. |
+| 2 | 完成挖掘 Finished digging | 当方块破坏动画完成时发送 Sent when the client thinks it is finished. |
+| 3 | 丢弃物品栈 Drop item stack | 触发当玩家按下丢弃键（Q）时丢弃当前手中的整个物品栈 Triggered by using the Drop Item key (default: Q) with the modifier to drop the entire selected stack (default: Control or Command, depending on OS). Location is always set to 0/0/0, Face is always set to -Y. Sequence is always set to 0. |
+| 4 | 丢弃物品 Drop item | 触发当玩家按下丢弃键（Q）时丢弃当前手中的单个物品 Triggered by using the Drop Item key (default: Q). Location is always set to 0/0/0, Face is always set to -Y. Sequence is always set to 0. |
+| 5 | 释放使用物品 Shoot arrow / finish eating | 表示物品已被使用；BOW和CROSSBOW游戏模式在此发送。Location is always set to 0/0/0, Face is always set to -Y. Sequence is always set to 0. |
+| 6 | 交换手中物品 Swap item in hand | 用于交换或放置手持物品 Used to swap or assign an item to the second hand. Location is always set to 0/0/0, Face is always set to -Y. Sequence is always set to 0. |
+
+面 Face 是以下之一：
+
+| 值 Value | 朝向 Offset | 面 Face |
+|---|---|---|
+| 0 | -Y | 底部 Bottom |
+| 1 | +Y | 顶部 Top |
+| 2 | -Z | 北 North |
+| 3 | +Z | 南 South |
+| 4 | -X | 西 West |
+| 5 | +X | 东 East |
+
+#### 玩家命令 Player Command
+
+当玩家开始/停止飞行、潜行、疾跑或从睡眠中醒来时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x26`<br/>资源 resource: `player_command` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | 玩家ID Player ID. |
+| | | | 动作ID Action ID | VarInt Enum | 动作ID The type of action, see below. |
+| | | | 跳跃提升 Jump Boost | VarInt | 仅用于开始跳跃马 Only used by the "start jump with horse" action, in which case it ranges from 0 to 100. In all other cases it is 0. |
+
+动作ID Action ID 可以是以下之一：
+
+| ID | 动作 Action |
+|---|---|
+| 0 | 开始潜行 Start sneaking |
+| 1 | 停止潜行 Stop sneaking |
+| 2 | 离开床 Leave bed |
+| 3 | 开始疾跑 Start sprinting |
+| 4 | 停止疾跑 Stop sprinting |
+| 5 | 开始马跳跃 Start jump with horse |
+| 6 | 停止马跳跃 Stop jump with horse |
+| 7 | 打开载具物品栏 Open vehicle inventory |
+| 8 | 开始潜行飞行 Start flying with elytra |
+
+#### 玩家输入 Player Input
+
+当玩家按下移动或跳跃键时发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x27`<br/>资源 resource: `player_input` | 游戏 Play | 服务器 Server | 横向移动 Sideways | Float | 正值表示向左移动 Positive to the left of the player. |
+| | | | 前进移动 Forward | Float | 正值表示向前移动 Positive forward. |
+| | | | 标志 Flags | Unsigned Byte | 位字段：0x1: 跳跃 jump, 0x2: 取消挂载 unmount. |
+
+#### Pong（游戏）Pong (play)
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x28`<br/>资源 resource: `pong` | 游戏 Play | 服务器 Server | ID | Int | Ping请求中的ID The id of the ping packet. |
+
+#### 更改配方书设置 Change Recipe Book Settings
+
+替换先前分开的配方书数据、工艺配方显示、熔炉配方显示和爆破熔炉/烟熏器配方显示数据包，并使用不同的ID。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x29`<br/>资源 resource: `recipe_book_change_settings` | 游戏 Play | 服务器 Server | 书ID Book ID | VarInt Enum | 0: 合成台 crafting, 1: 熔炉 furnace, 2: 爆破熔炉 blast furnace, 3: 烟熏器 smoker. |
+| | | | 书打开 Book Open | Boolean | |
+| | | | 过滤可合成 Filter Craftable | Boolean | |
+
+#### 设置已查看配方 Set Seen Recipe
+
+当玩家在配方书中选择配方以合成时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2A`<br/>资源 resource: `recipe_book_seen_recipe` | 游戏 Play | 服务器 Server | 配方ID Recipe ID | Identifier | |
+
+#### 选择交易 Select Trade
+
+当玩家在商人交易UI中选择特定交易时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2B`<br/>资源 resource: `select_trade` | 游戏 Play | 服务器 Server | 选择的槽位 Selected slot | VarInt | 选择的交易 The selected trade. |
+
+#### 设置信标效果 Set Beacon Effect
+
+更改信标的效果。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2C`<br/>资源 resource: `set_beacon` | 游戏 Play | 服务器 Server | 是否有主效果 Has Primary Effect | Boolean | |
+| | | | 主效果 Primary Effect | Optional VarInt | 主效果的ID A Potion ID. |
+| | | | 是否有次效果 Has Secondary Effect | Boolean | |
+| | | | 次效果 Secondary Effect | Optional VarInt | 次效果的ID A Potion ID. |
+
+#### 设置手持物品（服务器绑定）Set Held Item (serverbound)
+
+当玩家改变活动物品栏槽位时从客户端发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2D`<br/>资源 resource: `set_carried_item` | 游戏 Play | 服务器 Server | 槽位 Slot | Short | 玩家已选择的槽位（0-8） The slot which the player has selected (0–8). |
+
+#### 编程命令方块 Program Command Block
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2E`<br/>资源 resource: `set_command_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | |
+| | | | 命令 Command | String (32767) | |
+| | | | 模式 Mode | VarInt Enum | 0: 序列 SEQUENCE, 1: 自动 AUTO, 2: 红石 REDSTONE. |
+| | | | 标志 Flags | Byte | 0x01: 追踪输出 Track Output (if false, the output of the previous command will not be stored within the command block); 0x02: 条件 Is conditional; 0x04: 总是活动 Automatic. |
+
+#### 编程命令方块矿车 Program Command Block Minecart
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x2F`<br/>资源 resource: `set_command_minecart` | 游戏 Play | 服务器 Server | 实体ID Entity ID | VarInt | |
+| | | | 命令 Command | String (32767) | |
+| | | | 追踪输出 Track Output | Boolean | 如果为假，上一个命令的输出将不会存储在命令方块中 If false, the output of the previous command will not be stored within the command block. |
+
+#### 设置创造模式槽位 Set Creative Mode Slot
+
+当玩家在创造模式物品栏中点击物品槽位时，客户端会发送此数据包到服务器以设置物品栏中该槽位的内容。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x30`<br/>资源 resource: `set_creative_mode_slot` | 游戏 Play | 服务器 Server | 槽位 Slot | Short | 物品栏槽位 Inventory slot. |
+| | | | 点击的物品 Clicked Item | Slot | |
+
+#### 编程拼图方块 Program Jigsaw Block
+
+从拼图方块UI发送以更新方块。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x31`<br/>资源 resource: `set_jigsaw_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | 方块实体位置 Block entity location. |
+| | | | 名称 Name | Identifier | |
+| | | | 目标 Target | Identifier | |
+| | | | 池 Pool | Identifier | |
+| | | | 最终状态 Final state | String (32767) | 变为... Turns into. |
+| | | | 接头类型 Joint type | String (32767) | 翻滚、对齐 rollable if the attached piece can be rotated, else aligned. |
+| | | | 选择优先级 Selection priority | VarInt | |
+| | | | 位置优先级 Placement priority | VarInt | |
+
+#### 编程结构方块 Program Structure Block
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x32`<br/>资源 resource: `set_structure_block` | 游戏 Play | 服务器 Server | 位置 Location | Position | 方块实体位置 Block entity location. |
+| | | | 动作 Action | VarInt Enum | 更新动作 An additional action to perform beyond simply saving the given data; see below. |
+| | | | 模式 Mode | VarInt Enum | 0: 保存 SAVE, 1: 加载 LOAD, 2: 角落 CORNER, 3: 数据 DATA. |
+| | | | 名称 Name | String (32767) | |
+| | | | 偏移X Offset X | Byte | 介于-48和48之间 Between -48 and 48. |
+| | | | 偏移Y Offset Y | Byte | 介于-48和48之间 Between -48 and 48. |
+| | | | 偏移Z Offset Z | Byte | 介于-48和48之间 Between -48 and 48. |
+| | | | 尺寸X Size X | Byte | 介于0和48之间 Between 0 and 48. |
+| | | | 尺寸Y Size Y | Byte | 介于0和48之间 Between 0 and 48. |
+| | | | 尺寸Z Size Z | Byte | 介于0和48之间 Between 0 and 48. |
+| | | | 镜像 Mirror | VarInt Enum | 0: 无 NONE, 1: 左右 LEFT_RIGHT, 2: 前后 FRONT_BACK. |
+| | | | 旋转 Rotation | VarInt Enum | 0: 无 NONE, 1: 顺时针90 CLOCKWISE_90, 2: 顺时针180 CLOCKWISE_180, 3: 逆时针90 COUNTERCLOCKWISE_90. |
+| | | | 元数据 Metadata | String (128) | |
+| | | | 完整性 Integrity | Float | 介于0和1之间 Between 0 and 1. |
+| | | | 种子 Seed | VarLong | |
+| | | | 标志 Flags | Byte | 0x01: 忽略实体 Ignore entities; 0x02: 显示空气 Show air; 0x04: 显示边界框 Show bounding box; 0x08: 需要红石 Requires power. |
+
+可能的动作 action 值：
+
+| 值 Value | 动作 Action |
+|---|---|
+| 0 | 更新数据 Update data |
+| 1 | 保存结构 Save structure |
+| 2 | 加载结构 Load structure |
+| 3 | 检测尺寸 Detect size |
+
+#### 更新告示牌 Update Sign
+
+当玩家点击完成按钮完成告示牌编辑时从客户端发送此数据包，或在打开书并静默签名后（即不由打开签名编辑器 Open Sign Editor 打开）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x33`<br/>资源 resource: `sign_update` | 游戏 Play | 服务器 Server | 位置 Location | Position | 方块坐标 Block Coordinates. |
+| | | | 是前面 Is Front Text | Boolean | 文本是否在告示牌的前面 Whether the updated text is in front or on the back of the sign. |
+| | | | 行1 Line 1 | String (384) | 告示牌的第一行 First line of text in the sign. |
+| | | | 行2 Line 2 | String (384) | 告示牌的第二行 Second line of text in the sign. |
+| | | | 行3 Line 3 | String (384) | 告示牌的第三行 Third line of text in the sign. |
+| | | | 行4 Line 4 | String (384) | 告示牌的第四行 Fourth line of text in the sign. |
+
+#### 挥动手臂 Swing Arm
+
+当玩家的手臂摆动时从客户端发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x34`<br/>资源 resource: `swing` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 0: 主手 main hand, 1: 副手 off hand. |
+
+#### 传送到实体 Teleport To Entity
+
+传送到给定实体。观察者模式专用。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x35`<br/>资源 resource: `teleport_to_entity` | 游戏 Play | 服务器 Server | 目标玩家 Target Player | UUID | 要传送到的玩家的UUID UUID of the player to teleport to (can also be an entity UUID). |
+
+#### 在...上使用物品 Use Item On
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x36`<br/>资源 resource: `use_item_on` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 用于放置方块的手；0: 主手 main hand, 1: 副手 off hand. |
+| | | | 位置 Location | Position | 方块位置 Block position. |
+| | | | 面 Face | VarInt Enum | 光标所在的方块的面 The face on which the block is placed (as documented at Player Action). |
+| | | | 光标位置X Cursor Position X | Float | 光标在方块面上点击的位置，范围为0到1 The position of the crosshair on the block, from 0 to 1 increasing from west to east. |
+| | | | 光标位置Y Cursor Position Y | Float | 光标在方块面上点击的位置，范围为0到1 The position of the crosshair on the block, from 0 to 1 increasing from bottom to top. |
+| | | | 光标位置Z Cursor Position Z | Float | 光标在方块面上点击的位置，范围为0到1 The position of the crosshair on the block, from 0 to 1 increasing from north to south. |
+| | | | 在方块内部 Inside block | Boolean | 如果玩家头部在方块内部则为真 True when the player's head is inside of a block. |
+| | | | 序列 Sequence | VarInt | |
+
+#### 使用物品 Use Item
+
+当玩家在未指向方块或实体的情况下右键点击时发送。（例如，射击弓箭）
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x38`<br/>资源 resource: `use_item` | 游戏 Play | 服务器 Server | 手 Hand | VarInt Enum | 0: 主手 main hand, 1: 副手 off hand. |
+| | | | 序列 Sequence | VarInt | |
+
+---
+
+## 游戏 Play 章节翻译完成
+
+所有游戏 Play 状态的客户端绑定和服务器绑定数据包已全部翻译完成！
+
