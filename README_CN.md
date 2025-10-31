@@ -2089,3 +2089,490 @@ if (playerDistance < distance) {
 | 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
 |---|---|---|---|---|---|
 | 协议 protocol: `0x59`<br/>资源 resource: `set_cursor_item` | 游戏 Play | 客户端 Client | 槽位数据 Slot Data | 槽位 Slot | |
+
+#### 玩家旋转 Player Rotation
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x42`<br/>资源 resource: `player_rotation` | 游戏 Play | 客户端 Client | 偏航角 Yaw | Float | X轴上的旋转，以度为单位 Rotation on the X axis, in degrees. |
+| | | | 俯仰角 Pitch | Float | Y轴上的旋转，以度为单位 Rotation on the Y axis, in degrees. |
+
+#### 配方书添加 Recipe Book Add
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x43`<br/>资源 resource: `recipe_book_add` | 游戏 Play | 客户端 Client | 配方 Recipes | 前缀数组 Prefixed Array | |
+| | | | - 配方ID Recipe ID | VarInt | 要分配给配方的ID ID to assign to the recipe. |
+| | | | - 显示 Display | Recipe Display | |
+| | | | - 组ID Group ID | VarInt | |
+| | | | - 类别ID Category ID | VarInt | `minecraft:recipe_book_category` 注册表中的ID ID in the `minecraft:recipe_book_category` registry. |
+| | | | - 材料 Ingredients | 前缀可选 Prefixed Optional 前缀数组 Prefixed Array of ID Set | `minecraft:item` 注册表中的ID，或内联定义 IDs in the `minecraft:item` registry, or an inline definition. |
+| | | | - 标志 Flags | Byte | 0x01: 显示通知 show notification; 0x02: 高亮为新 highlight as new |
+| | | | 替换 Replace | Boolean | 替换或添加到已知配方 Replace or Add to known recipes |
+
+#### 设置默认重生位置 Set Default Spawn Position
+
+设置玩家死亡后重生的坐标。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5A`<br/>资源 resource: `set_default_spawn_position` | 游戏 Play | 客户端 Client | 位置 Location | Position | 重生位置 Spawn location. |
+| | | | 角度 Angle | Float | 重生时面向的角度 The angle at which to respawn at. |
+
+#### 显示死亡画面 Set Display Death Screen
+
+当玩家死亡时不显示死亡画面（客户端会重生到其床/重生锚）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5B`<br/>资源 resource: `set_display_objective` | 游戏 Play | 客户端 Client | 位置 Position | VarInt | 计分板位置 The position of the scoreboard. 0: 列表 list, 1: 侧边栏 sidebar, 2: 名字下方 below name, 3 - 18: 团队特定侧边栏 team specific sidebar (计算为 3 + 团队颜色ID 3 + team color id). |
+| | | | 计分板名称 Score Name | String (32767) | 要显示的唯一计分板名称 The unique name for the scoreboard to be displayed. |
+
+#### 设置实体元数据 Set Entity Metadata
+
+更新一个或多个实体的元数据字段。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5C`<br/>资源 resource: `set_entity_data` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| | | | 元数据 Metadata | 实体元数据 Entity Metadata | |
+
+#### 链接实体 Link Entities
+
+此数据包从服务器发送到客户端时，客户端将绘制链接实体的牵引绳/约束线。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5D`<br/>资源 resource: `set_entity_link` | 游戏 Play | 客户端 Client | 被链接实体ID Attached Entity ID | Int | 被链接实体的EID Attached entity's EID. |
+| | | | 链接对象ID Holding Entity ID | Int | 持有牵引绳的实体的EID EID of the entity holding the lead. 设置为-1以分离 Set to -1 to detach. |
+
+#### 设置实体速度 Set Entity Velocity
+
+实体的速度以每刻 1/8000 方块为单位。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5E`<br/>资源 resource: `set_entity_motion` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| | | | 速度X Velocity X | Short | X轴上的速度 Velocity on the X axis. |
+| | | | 速度Y Velocity Y | Short | Y轴上的速度 Velocity on the Y axis. |
+| | | | 速度Z Velocity Z | Short | Z轴上的速度 Velocity on the Z axis. |
+
+#### 设置装备 Set Equipment
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x5F`<br/>资源 resource: `set_equipment` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 装备所有者的实体ID Entity ID of the entity. |
+| | | | 装备 Equipment | 数组 Array | 装备槽位和物品数据 Equipment slot and item. 数组以槽位字节为键，其最高有效位（0x80）设置为表示后面跟着另一个槽位 The array is keyed by the slot byte, with its top significant bit (0x80) set to indicate that there is another slot following. 最后一个槽位的该位未设置，表示这是最后一个槽位 On the last slot, that bit is not set, indicating that this is the final slot. |
+| | | | - 槽位 Slot | Byte | 装备槽位 Equipment slot. 0: 主手 main hand, 1: 副手 off hand, 2-5: 盔甲槽位（2: 靴子 boots, 3: 护腿 leggings, 4: 胸甲 chestplate, 5: 头盔 helmet），6: 身体 body. 见下文 See below. 还要注意最高有效位，如上所述 Also note the top significant bit as described above. |
+| | | | - 物品 Item | 槽位 Slot | |
+
+装备槽位值 Equipment slot values:
+
+| ID | 装备槽位 Equipment Slot |
+|---|---|
+| 0 | 主手 Main hand |
+| 1 | 副手 Off hand |
+| 2 | 靴子 Boots |
+| 3 | 护腿 Leggings |
+| 4 | 胸甲 Chestplate |
+| 5 | 头盔 Helmet |
+| 6 | 身体 Body |
+
+#### 设置经验 Set Experience
+
+发送给玩家每当经验球被收集或总经验以任何方式改变时。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x60`<br/>资源 resource: `set_experience` | 游戏 Play | 客户端 Client | 经验值 Experience Bar | Float | 介于0和1之间 Between 0 and 1. |
+| | | | 等级 Level | VarInt | |
+| | | | 总经验 Total Experience | VarInt | 见经验条目 See Experience. |
+
+#### 设置生命值 Set Health
+
+发送给客户端以设置或更新玩家的生命值。
+
+食物饱和度充当食物等级的缓冲区。食物饱和度不会显示给客户端，并且通常仅稍高于食物等级。如果在一项动作需要食物时食物饱和度大于零，食物饱和度将减少而不是食物等级。有关详细信息，请参阅 Minecraft Wiki 文章。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x61`<br/>资源 resource: `set_health` | 游戏 Play | 客户端 Client | 生命值 Health | Float | 0或更少 = 死亡 0 or less = dead, 20 = 满血 full HP. |
+| | | | 食物 Food | VarInt | 0-20. |
+| | | | 食物饱和度 Food Saturation | Float | 似乎可以变为负数并大于5 Seems to vary from 0.0 to 5.0 in integer increments. |
+
+#### 更新目标 Update Objectives
+
+这通过计分板系统发送给客户端。它通常用于在客户端创建计分板或进行内容更改。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x62`<br/>资源 resource: `set_objective` | 游戏 Play | 客户端 Client | 目标名称 Objective Name | String (32767) | 一个唯一的名称 A unique name for the objective. |
+| | | | 模式 Mode | Byte | 0: 创建计分板 create the scoreboard. 1: 移除计分板 remove the scoreboard. 2: 更新显示文本 update the display text. |
+| | | | 目标值 Objective Value | 可选 Optional Text Component | 仅当模式为0或2时 Only if mode is 0 or 2. 要显示的文本 The text to be displayed for the score. |
+| | | | 类型 Type | 可选 Optional VarInt Enum | 仅当模式为0或2时 Only if mode is 0 or 2. 0 = "整数" "integer", 1 = "心形" "hearts". |
+| | | | 数字格式 Number Format | 可选 Optional VarInt Enum | 仅当模式为0或2时 Only if mode is 0 or 2. 0 = 空白 blank, 1 = 样式化 styled, 2 = 固定 fixed. |
+| | | | 数字格式字段 Number Format Field | 变化 Varies | 取决于数字格式类型，见下文 Depends on number format type, see below. |
+
+数字格式 Number Format：空白显示无内容，样式化使用计分板的默认样式，固定显示给定文本。
+
+#### 设置乘客 Set Passengers
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x63`<br/>资源 resource: `set_passengers` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 载具的实体ID Vehicle's EID. |
+| | | | 乘客 Passengers | 前缀数组 Prefixed Array of VarInt | 乘客的实体ID Passenger EIDs. |
+
+#### 更新团队 Update Teams
+
+创建和更新团队。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x64`<br/>资源 resource: `set_player_team` | 游戏 Play | 客户端 Client | 团队名称 Team Name | String (32767) | 一个唯一的名称 A unique name for the team. (在计分板实现中与目标名称共享命名空间；建议使用绝对或相对命名空间限定名称来避免冲突 Shared with objectives; command suggestions will likely show an overlap if you don't use a unique namespace.) |
+| | | | 模式 Mode | Byte | 决定其余数据包的布局 Determines the layout of the remaining packet. 0: 创建团队 create team. 1: 移除团队 remove team. 2: 更新团队信息 update team info. 3: 添加实体到团队 add entities to team. 4: 从团队移除实体 remove entities from team. |
+| | | | 团队显示名称 Team Display Name | 可选 Optional Text Component | 仅当模式为0或2时 Only if Mode is 0 or 2. |
+| | | | 友好标志 Friendly Flags | 可选 Optional Byte | 仅当模式为0或2时 Only if Mode is 0 or 2. 位掩码 Bit mask. 0x01: 允许友军伤害 Allow friendly fire, 0x02: 可以看到隐形队友 Can see invisible teammates. |
+| | | | 名称标签可见性 Name Tag Visibility | 可选 Optional String Enum (40) | 仅当模式为0或2时 Only if Mode is 0 or 2. `always`, `hideForOtherTeams`, `hideForOwnTeam`, `never`. |
+| | | | 碰撞规则 Collision Rule | 可选 Optional String Enum (40) | 仅当模式为0或2时 Only if Mode is 0 or 2. `always`, `pushOtherTeams`, `pushOwnTeam`, `never`. |
+| | | | 团队颜色 Team Color | 可选 Optional VarInt Enum | 仅当模式为0或2时 Only if Mode is 0 or 2. 用于为团队和玩家着色 Used to color the name of players on the team; see below for values. |
+| | | | 团队前缀 Team Prefix | 可选 Optional Text Component | 仅当模式为0或2时 Only if Mode is 0 or 2. 显示在团队成员名称之前 Displayed before the names of entities on the team. |
+| | | | 团队后缀 Team Suffix | 可选 Optional Text Component | 仅当模式为0或2时 Only if Mode is 0 or 2. 显示在团队成员名称之后 Displayed after the names of entities on the team. |
+| | | | 实体 Entities | 可选 Optional 前缀数组 Prefixed Array of String (32767) | 仅当模式为0、3或4时 Only if Mode is 0, 3 or 4. 要添加/移除的实体的标识符 Identifiers for the entities in this team. 对于玩家，这是他们的用户名；对于其他实体，这是他们的UUID For players, this is their username; for other entities, it is their UUID. |
+
+团队颜色：与聊天颜色的ID相同。
+
+#### 更新分数 Update Score
+
+当项目的分数更新或移除时发送到客户端。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x65`<br/>资源 resource: `set_score` | 游戏 Play | 客户端 Client | 实体名称 Entity Name | String (32767) | 此分数所属的实体 The entity whose score this is. 对于玩家，这是他们的用户名；对于其他实体，这是他们的UUID For players, this is their username; for other entities, it is their UUID. |
+| | | | 目标名称 Objective Name | String (32767) | 分数所属的目标的名称 The name of the objective the score belongs to. |
+| | | | 值 Value | VarInt | 要显示的分数 The score to be displayed next to the entry. |
+| | | | 显示名称 Display Name | 可选 Optional Text Component | 用于自定义条目的显示名称 The custom display name. |
+| | | | 数字格式 Number Format | 可选 Optional VarInt Enum | 与 Update Objectives 中的相同 Same as Update Objectives. |
+
+#### 设置模拟距离 Set Simulation Distance
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x66`<br/>资源 resource: `set_simulation_distance` | 游戏 Play | 客户端 Client | 模拟距离 Simulation Distance | VarInt | 服务器模拟的距离，以区块为单位 The distance that the client will process specific things, such as entities. |
+
+#### 设置副标题文本 Set Subtitle Text
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x67`<br/>资源 resource: `set_subtitle_text` | 游戏 Play | 客户端 Client | 副标题文本 Subtitle Text | Text Component | |
+
+#### 更新时间 Update Time
+
+时间以刻为单位；一天有20刻/秒。世界年龄以刻为单位；没有相关计算，只是累加器。
+
+世界年龄不与日间循环挂钩，而是每刻递增，无论时间是否被冻结。时间表示是日间循环。0是日出，6000是中午，12000是日落，18000是午夜，23999是日出的一刻前。负值时间将冻结循环。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x68`<br/>资源 resource: `set_time` | 游戏 Play | 客户端 Client | 世界年龄 World Age | Long | 以刻为单位；不会被服务器命令修改 In ticks; not changed by server commands. |
+| | | | 时间 Time of day | Long | 世界时间，以刻为单位 The world (or region) time, in ticks. 如果为负，太阳将停在天空中的绝对值 If negative the sun will stop moving at the Math.abs of the time. |
+
+#### 设置标题文本 Set Title Text
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x69`<br/>资源 resource: `set_title_text` | 游戏 Play | 客户端 Client | 标题文本 Title Text | Text Component | |
+
+#### 设置标题动画时间 Set Title Animation Times
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6A`<br/>资源 resource: `set_titles_animation` | 游戏 Play | 客户端 Client | 淡入 Fade In | Int | 以刻为单位的淡入时间 Ticks to spend fading in. |
+| | | | 停留 Stay | Int | 以刻为单位的停留时间 Ticks to keep the title displayed. |
+| | | | 淡出 Fade Out | Int | 以刻为单位的淡出时间 Ticks to spend fading out, not when to start fading out. |
+
+#### 实体声音效果 Entity Sound Effect
+
+播放与实体绑定的声音效果。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6B`<br/>资源 resource: `sound_entity` | 游戏 Play | 客户端 Client | 声音ID Sound ID | ID或 Sound Event | `minecraft:sound_event` 注册表中的声音事件ID，或内联定义 ID in the `minecraft:sound_event` registry, or an inline definition. |
+| | | | 声音类别 Sound Category | VarInt Enum | 声音的类别，见下文 The category that this sound will be played from. |
+| | | | 实体ID Entity ID | VarInt | |
+| | | | 音量 Volume | Float | 1.0是100%，可以更多 1.0 is 100%, capped between 0.0 and 1.0 by vanilla clients. |
+| | | | 音调 Pitch | Float | 音调的浮点表示形式 Float between 0.5 and 2.0 by Vanilla clients. |
+| | | | 种子 Seed | Long | 用于为客户端播放声音时提供种子 Seed used to pick sound variant. |
+
+声音类别 Sound Categories：
+
+| ID | 名称 Name |
+|---|---|
+| 0 | 主音量 master |
+| 1 | 音乐 music |
+| 2 | 唱片 record |
+| 3 | 天气 weather |
+| 4 | 方块 block |
+| 5 | 敌对生物 hostile |
+| 6 | 友好生物 neutral |
+| 7 | 玩家 player |
+| 8 | 环境 ambient |
+| 9 | 语音 voice |
+
+#### 声音效果 Sound Effect
+
+用于播放声音效果。所有已知的声音效果位置在原版客户端的源代码中的 sounds.json 中定义（修改此文件或使用资源包覆盖它可以添加自定义声音；未来的版本可能会为此目的添加注册表）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6C`<br/>资源 resource: `sound` | 游戏 Play | 客户端 Client | 声音ID Sound ID | ID或 Sound Event | `minecraft:sound_event` 注册表中的声音事件ID，或内联定义 ID in the `minecraft:sound_event` registry, or an inline definition. |
+| | | | 声音类别 Sound Category | VarInt Enum | 声音的类别，见上文 The category that this sound will be played from (see Sound Categories). |
+| | | | 效果位置X Effect Position X | Int | 效果位置乘以8（固定点数，与32有关的分数）Effect position (X coordinate) multiplied by 8 (fixed-point number with only 3 bits dedicated to the fractional part). |
+| | | | 效果位置Y Effect Position Y | Int | 效果位置乘以8（固定点数，与32有关的分数）Effect position (Y coordinate) multiplied by 8 (fixed-point number with only 3 bits dedicated to the fractional part). |
+| | | | 效果位置Z Effect Position Z | Int | 效果位置乘以8（固定点数，与32有关的分数）Effect position (Z coordinate) multiplied by 8 (fixed-point number with only 3 bits dedicated to the fractional part). |
+| | | | 音量 Volume | Float | 1.0是100%，可以更多 1.0 is 100%, capped between 0.0 and 1.0 by Vanilla clients. |
+| | | | 音调 Pitch | Float | 音调的浮点表示形式 Float between 0.5 and 2.0 by Vanilla clients. |
+| | | | 种子 Seed | Long | 用于为客户端播放声音时提供种子 Seed used to pick sound variant. |
+
+#### 开始配置 Start Configuration
+
+由服务器发送以从游戏状态切换到配置状态。
+
+原版客户端会发送 Acknowledge Finish Configuration 数据包来确认配置开始。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6D`<br/>资源 resource: `start_configuration` | 游戏 Play | 客户端 Client | 无字段 no fields | | |
+
+#### 停止声音 Stop Sound
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6E`<br/>资源 resource: `stop_sound` | 游戏 Play | 客户端 Client | 标志 Flags | Byte | 控制后续字段 Controls the following two fields. 0x01: 是否存在声音 Should Source be included, 0x02: 是否存在声音名称 Should Sound be included. |
+| | | | 来源 Source | 可选 Optional VarInt Enum | 仅当标志设置了相应位时 Only if flags is 3 or 1 (bit 0 set). 见 Sound Categories. |
+| | | | 声音 Sound | 可选 Optional Identifier | 仅当标志设置了相应位时 Only if flags is 2 or 3 (bit 1 set). 声音的名称 A sound effect name. |
+
+#### 存储Cookie Store Cookie
+
+由服务器发送以存储客户端上的数据。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x6F`<br/>资源 resource: `store_cookie` | 游戏 Play | 客户端 Client | 键 Key | Identifier | 要存储的cookie的标识符 The identifier of the cookie. |
+| | | | 载荷长度 Payload Length | VarInt | 以下载荷的长度，以字节为单位 Length of the following byte array. |
+| | | | 载荷 Payload | Byte Array (5120) | 要存储的cookie的数据 The data of the cookie. |
+
+#### 系统聊天消息 System Chat Message
+
+向客户端发送系统聊天消息。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x70`<br/>资源 resource: `system_chat` | 游戏 Play | 客户端 Client | 内容 Content | Text Component | 有限的聊天格式化 Limited to 262144 bytes. |
+| | | | 覆盖 Overlay | Boolean | 是否将消息显示在游戏上的覆盖层（hotbar上方）中 Whether the message is an actionbar or chat message. true: 游戏信息（hotbar）actionbar, false: 系统消息 system message. |
+
+#### 设置Tab列表页眉和页脚 Set Tab List Header And Footer
+
+此数据包可以由服务器发送以设置显示在玩家列表（通过按Tab键访问）上方和下方的文本。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x71`<br/>资源 resource: `tab_list` | 游戏 Play | 客户端 Client | 页眉 Header | Text Component | 要显示在玩家列表上方 To display above the player list. |
+| | | | 页脚 Footer | Text Component | 要显示在玩家列表下方 To display below the player list. |
+
+#### 标签查询响应 Tag Query Response
+
+由服务器发送以响应 Query Block Entity Tag 或 Query Entity Tag。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x72`<br/>资源 resource: `tag_query` | 游戏 Play | 客户端 Client | 事务ID Transaction ID | VarInt | 可以与发送的查询数据包进行比较 Can be compared to the one sent in the original query packet. |
+| | | | NBT | NBT | 数据 The NBT of the block or entity. 如果没有可用的标签，则可能为空 May be a TAG_END (0) in which case no NBT is present. |
+
+#### 拾取物品 Pickup Item
+
+由服务器发送当有人拾取地面上的物品时。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x73`<br/>资源 resource: `take_item_entity` | 游戏 Play | 客户端 Client | 收集的实体ID Collected Entity ID | VarInt | |
+| | | | 收集者实体ID Collector Entity ID | VarInt | |
+| | | | 拾取物品数量 Pickup Item Count | VarInt | 似乎不被原版客户端使用 Seems to be 1 for XP orbs, otherwise the number of items in the stack. |
+
+#### 传送实体 Teleport Entity
+
+此数据包由服务器发送以将实体传送到新位置（尽管名称如此）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x74`<br/>资源 resource: `teleport_entity` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| | | | X | Double | |
+| | | | Y | Double | |
+| | | | Z | Double | |
+| | | | 偏航角 Yaw | Angle | 新角度，而不是增量 New angle, not a delta. |
+| | | | 俯仰角 Pitch | Angle | 新角度，而不是增量 New angle, not a delta. |
+| | | | 在地面上 On Ground | Boolean | |
+
+#### 设置刻状态 Set Ticking State
+
+用于调整客户端刻的速率。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x75`<br/>资源 resource: `set_ticking_state` | 游戏 Play | 客户端 Client | 刻率 Tick Rate | Float | |
+| | | | 是否冻结 Is Frozen | Boolean | |
+
+#### 步进刻 Step Tick
+
+将世界时间提前给定数量的刻。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x76`<br/>资源 resource: `tick_step` | 游戏 Play | 客户端 Client | 刻步数 Tick Steps | VarInt | |
+
+#### 传送实体移动 Transfer (play)
+
+通知客户端连接到另一台服务器。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x77`<br/>资源 resource: `transfer` | 游戏 Play | 客户端 Client | 主机 Host | String | 要连接到的主机名或IP The hostname of IP of the server. |
+| | | | 端口 Port | VarInt | 要连接到的端口 The port of the server. |
+
+#### 更新进度 Update Advancements
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x78`<br/>资源 resource: `update_advancements` | 游戏 Play | 客户端 Client | 是否重置/清除 Reset/Clear | Boolean | 是否重置/清除现有的进度数据 Whether to reset/clear the current advancements. |
+| | | | 进度映射 Advancement mapping | 前缀数组 Prefixed Array | 进度的键值对 Key-value pairs of advancements. |
+| | | | - 键 Key | Identifier | 进度标识符 The identifier of the advancement. |
+| | | | - 值 Value | 进度 Advancement | 进度数据 Advancement data (see below). |
+| | | | 已移除标识符列表 List of identifiers | 前缀数组 Prefixed Array of Identifier | 要移除的进度标识符 The identifiers of the advancements that should be removed. |
+| | | | 进度列表 Progress | 前缀数组 Prefixed Array | 进度进度数据 Progress on the advancements. |
+| | | | - 键 Key | Identifier | 进度的标识符 The identifier of the advancement. |
+| | | | - 值 Value | 进度进度 Advancement progress | 进度数据（见下文）Progress data (see below). |
+
+进度结构 Advancement structure：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 是否有父级 Has parent | Boolean | 指示接下来是否有父级ID Indicates whether the next field exists. |
+| 父级ID Parent id | 可选 Optional Identifier | 此进度的父级标识符 The identifier of the parent advancement. |
+| 是否有显示 Has display | Boolean | 指示接下来是否有显示数据 Indicates whether the next field exists. |
+| 显示数据 Display data | 可选 Optional Advancement Display | 见下文 (see below). |
+| 数组长度 Array length | VarInt | 奖励数组中的元素数 Number of elements in the following array. |
+| 奖励 Rewards | Identifier数组 Array of Identifier | 使用此进度获得的战利品表 The loot tables that are rewarded with this advancement. |
+| 是否发送遥测事件 Send telemetry event | Boolean | |
+
+进度显示 Advancement Display：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 标题 Title | Text Component | |
+| 描述 Description | Text Component | |
+| 图标 Icon | 槽位 Slot | |
+| 框架类型 Frame type | VarInt Enum | 0 = `task`, 1 = `challenge`, 2 = `goal`. |
+| 标志 Flags | Int | 0x01: 有背景纹理 has background texture; 0x02: `show_toast`; 0x04: `hidden`. |
+| 背景纹理 Background texture | 可选 Optional Identifier | 仅当标志指示存在背景纹理时 Only if flags indicates it. |
+| X坐标 X coord | Float | |
+| Y坐标 Y coord | Float | |
+
+进度进度 Advancement Progress：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 大小 Size | VarInt | 标准数组长度 Size of the following array. |
+| 标准 Criteria | 标准数组 Array of Criterion | 每个标准的进度 Progress on each individual criterion. |
+
+标准 Criterion：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 标准标识符 Criterion identifier | Identifier | 标准的标识符 The identifier of the criterion. |
+| 标准进度 Criterion progress | 标准进度 Criterion Progress | 此特定标准的进度 The progress on this particular criterion. |
+
+标准进度 Criterion Progress：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| 是否已达成 Achieved | Boolean | 如果为真，则下一个字段存在 If true, next field is present. |
+| 达成日期 Date of achieving | 可选 Optional Long | 作为Unix时间戳的达成日期 As returned by Date.getTime. |
+
+#### 更新属性 Update Attributes
+
+设置给定实体的属性。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x79`<br/>资源 resource: `update_attributes` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| | | | 属性 Attributes | 前缀数组 Prefixed Array | 属性和相关修改器的列表 List of attributes and their modifiers. |
+| | | | - 属性ID Attribute ID | ID或 Attribute | `minecraft:attribute` 注册表中的属性ID，或内联定义 ID in the `minecraft:attribute` registry, or an inline definition. |
+| | | | - 值 Value | Double | |
+| | | | - 修改器数量 Number of Modifiers | VarInt | 后续数组的长度 Length of the following array. |
+| | | | - 修改器 Modifiers | 属性修改器数组 Array of Attribute Modifier | 见下文 (see below). |
+
+属性修改器 Attribute Modifier structure：
+
+| 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|
+| ID | Identifier | |
+| 数量 Amount | Double | 可以是负数 May be negative. |
+| 操作 Operation | Byte | 见下文 (see below). |
+
+操作字段 Operation field：
+
+| ID | 操作 Operation |
+|---|---|
+| 0 | 加值到总和 Add value to sum |
+| 1 | 乘值到总和 Multiply sum by (1 + value) |
+| 2 | 乘值到积 Multiply product by (1 + value) |
+
+#### 实体效果 Entity Effect
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x7A`<br/>资源 resource: `update_mob_effect` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | |
+| | | | 效果ID Effect ID | VarInt | 见状态效果列表 See Status Effect. |
+| | | | 放大器 Amplifier | VarInt | 药水效果等级减1 Notchian client displays effect level as Amplifier + 1. |
+| | | | 持续时间 Duration | VarInt | 持续时间，以刻为单位 Duration in ticks. (-1 for infinite) |
+| | | | 标志 Flags | Byte | 位字段 Bit field, see below. |
+| | | | 是否有因子数据 Has Factor Data | Boolean | 当 Effect ID 为 32 (RAID_OMEN) 时使用 Used for effect ID 32 (RAID_OMEN). |
+| | | | 因子计算数据 Factor Codec | 可选 Optional NBT | 见下文 See below. |
+
+标志 Flags：
+
+| 位 Bit | 效果 Effect |
+|---|---|
+| 0x01 | 是环境效果 Is ambient |
+| 0x02 | 显示粒子 Show particles |
+| 0x04 | 显示图标 Show icon |
+| 0x08 | 混合 Blend |
+
+因子数据 Factor Data（NBT标签）：
+
+```
+TAG_Compound: none
+  TAG_Int: padding_duration
+  TAG_Float: factor_start
+  TAG_Float: factor_target
+  TAG_Float: factor_current
+  TAG_Int: effect_changed_timestamp
+  TAG_Float: factor_previous_frame
+  TAG_Boolean: had_effect_last_tick
+```
+
+#### 更新配方 Update Recipes
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x7B`<br/>资源 resource: `update_recipes` | 游戏 Play | 客户端 Client | 配方数量 Num Recipes | VarInt | 后续数组中的元素数 Number of elements in the following array. |
+| | | | 配方 Recipes | 配方数组 Array of Recipe | |
+| | | | - 配方ID Recipe ID | VarInt | |
+| | | | - 配方数据 Recipe Data | Recipe | |
+
+#### 更新标签 Update Tags (play)
+
+与配置阶段的 Update Tags 数据包相同。
+
+---
+
+以上为客户端绑定 Play 数据包的完整翻译。
