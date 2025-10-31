@@ -693,6 +693,135 @@ Minecraft服务器接受来自TCP客户端的连接，并使用数据包与它�
 | `minecraft:horse_one_cm` | 18 | 距离 Distance |
 | `minecraft:aviate_one_cm` | 19 | 距离 Distance |
 | `minecraft:swim_one_cm` | 20 | 距离 Distance |
+| `minecraft:strider_one_cm` | 21 | 距离 Distance |
+| `minecraft:jump` | 22 | 无 None |
+| `minecraft:drop` | 23 | 无 None |
+| `minecraft:damage_dealt` | 24 | 伤害 Damage |
+| `minecraft:damage_dealt_absorbed` | 25 | 伤害 Damage |
+| `minecraft:damage_dealt_resisted` | 26 | 伤害 Damage |
+| `minecraft:damage_taken` | 27 | 伤害 Damage |
+| `minecraft:damage_blocked_by_shield` | 28 | 伤害 Damage |
+| `minecraft:damage_absorbed` | 29 | 伤害 Damage |
+| `minecraft:damage_resisted` | 30 | 伤害 Damage |
+| `minecraft:deaths` | 31 | 无 None |
+| `minecraft:mob_kills` | 32 | 无 None |
+| `minecraft:animals_bred` | 33 | 无 None |
+| `minecraft:player_kills` | 34 | 无 None |
+| `minecraft:fish_caught` | 35 | 无 None |
+| `minecraft:talked_to_villager` | 36 | 无 None |
+| `minecraft:traded_with_villager` | 37 | 无 None |
+| `minecraft:eat_cake_slice` | 38 | 无 None |
+| `minecraft:fill_cauldron` | 39 | 无 None |
+| `minecraft:use_cauldron` | 40 | 无 None |
+| `minecraft:clean_armor` | 41 | 无 None |
+| `minecraft:clean_banner` | 42 | 无 None |
+| `minecraft:clean_shulker_box` | 43 | 无 None |
+| `minecraft:interact_with_brewingstand` | 44 | 无 None |
+| `minecraft:interact_with_beacon` | 45 | 无 None |
+| `minecraft:inspect_dropper` | 46 | 无 None |
+| `minecraft:inspect_hopper` | 47 | 无 None |
+| `minecraft:inspect_dispenser` | 48 | 无 None |
+| `minecraft:play_noteblock` | 49 | 无 None |
+| `minecraft:tune_noteblock` | 50 | 无 None |
+| `minecraft:pot_flower` | 51 | 无 None |
+| `minecraft:trigger_trapped_chest` | 52 | 无 None |
+| `minecraft:open_enderchest` | 53 | 无 None |
+| `minecraft:enchant_item` | 54 | 无 None |
+| `minecraft:play_record` | 55 | 无 None |
+| `minecraft:interact_with_furnace` | 56 | 无 None |
+| `minecraft:interact_with_crafting_table` | 57 | 无 None |
+| `minecraft:open_chest` | 58 | 无 None |
+| `minecraft:sleep_in_bed` | 59 | 无 None |
+| `minecraft:open_shulker_box` | 60 | 无 None |
+| `minecraft:open_barrel` | 61 | 无 None |
+| `minecraft:interact_with_blast_furnace` | 62 | 无 None |
+| `minecraft:interact_with_smoker` | 63 | 无 None |
+| `minecraft:interact_with_lectern` | 64 | 无 None |
+| `minecraft:interact_with_campfire` | 65 | 无 None |
+| `minecraft:interact_with_cartography_table` | 66 | 无 None |
+| `minecraft:interact_with_loom` | 67 | 无 None |
+| `minecraft:interact_with_stonecutter` | 68 | 无 None |
+| `minecraft:bell_ring` | 69 | 无 None |
+| `minecraft:raid_trigger` | 70 | 无 None |
+| `minecraft:raid_win` | 71 | 无 None |
+| `minecraft:interact_with_anvil` | 72 | 无 None |
+| `minecraft:interact_with_grindstone` | 73 | 无 None |
+| `minecraft:target_hit` | 74 | 无 None |
+| `minecraft:interact_with_smithing_table` | 75 | 无 None |
+
+单位 Units：
+
+- 无 None：只是一个普通数字（格式化为0位小数）
+- 伤害 Damage：值是正常数量的10倍
+- 距离 Distance：以厘米为单位的距离（方块的百分之一）
+- 时间 Time：以刻 ticks 为单位的时间跨度
+
+#### 确认方块更改 Acknowledge Block Change
+
+确认用户发起的方块更改。收到此数据包后，客户端将显示服务器发送的方块状态，而不是客户端预测的方块状态。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x04`<br/>`block_changed_ack` | 游戏 Play | 客户端 Client | 序列ID Sequence ID | VarInt | 表示要确认的序列；这用于在交互后正确同步方块更改到客户端。 |
+
+#### 设置方块破坏阶段 Set Block Destroy Stage
+
+0-9是可显示的破坏阶段，任何其他数字意味着此坐标上没有动画。
+
+方块破坏动画仍然可以应用于空气；动画将保持可见，尽管没有方块被破坏。但是，如果应用于透明方块，可能会发生奇怪的图形效果，包括水失去透明度。（在正常游戏中破坏冰块时可以看到类似的效果）
+
+如果需要同时显示多个破坏动画，则必须为每个动画提供唯一的实体ID。实体ID不需要对应于客户端上的实际实体。使用随机生成的数字是有效的。
+
+移除破坏动画时，必须使用设置它的实体的ID。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x05`<br/>`block_destruction` | 游戏 Play | 客户端 Client | 实体ID Entity ID | VarInt | 正在破坏方块的实体的ID。 |
+| `0x05`<br/>`block_destruction` | 游戏 Play | 客户端 Client | 位置 Location | 位置 Position | 方块位置 Block Position。 |
+| `0x05`<br/>`block_destruction` | 游戏 Play | 客户端 Client | 破坏阶段 Destroy Stage | 无符号字节 Unsigned Byte | 0-9设置它，任何其他值移除它。 |
+
+#### 方块实体数据 Block Entity Data
+
+设置与给定位置的方块关联的方块实体 block entity。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x06`<br/>`block_entity_data` | 游戏 Play | 客户端 Client | 位置 Location | 位置 Position | |
+| `0x06`<br/>`block_entity_data` | 游戏 Play | 客户端 Client | 类型 Type | VarInt | `minecraft:block_entity_type` 注册表中的ID |
+| `0x06`<br/>`block_entity_data` | 游戏 Play | 客户端 Client | NBT数据 NBT Data | NBT | 要设置的数据。 |
+
+#### 方块动作 Block Action
+
+此数据包用于方块执行的许多动作和动画，通常是非持久性的。客户端忽略提供的方块类型，而是使用其世界中的方块状态。
+
+有关值列表，请参阅方块动作 Block Actions。
+
+**警告：** 此数据包使用来自 `minecraft:block` 注册表的方块ID，而不是方块状态。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x07`<br/>`block_event` | 游戏 Play | 客户端 Client | 位置 Location | 位置 Position | 方块坐标 Block coordinates。 |
+| `0x07`<br/>`block_event` | 游戏 Play | 客户端 Client | 动作ID（字节1） Action ID (Byte 1) | 无符号字节 Unsigned Byte | 根据方块而变化 - 请参阅方块动作 Block Actions。 |
+| `0x07`<br/>`block_event` | 游戏 Play | 客户端 Client | 动作参数（字节2） Action Parameter (Byte 2) | 无符号字节 Unsigned Byte | 根据方块而变化 - 请参阅方块动作 Block Actions。 |
+| `0x07`<br/>`block_event` | 游戏 Play | 客户端 Client | 方块类型 Block Type | VarInt | `minecraft:block` 注册表中的ID。原版客户端不使用此值，因为它将根据给定位置推断方块类型。 |
+
+#### 方块更新 Block Update
+
+在渲染距离内更改方块时触发。
+
+**警告：** 在未加载的区块中更改方块不是稳定的操作。原版客户端当前使用共享的空区块，该区块针对未加载区块中的所有方块更改进行修改；虽然在1.9中此区块从不渲染，但在旧版本中，更改的方块将出现在空区块的所有副本中。服务器应避免在未加载的区块中发送方块更改，客户端应忽略此类数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x08`<br/>`block_update` | 游戏 Play | 客户端 Client | 位置 Location | 位置 Position | 方块坐标 Block Coordinates。 |
+| `0x08`<br/>`block_update` | 游戏 Play | 客户端 Client | 方块ID Block ID | VarInt | 方块状态注册表 block state registry 中给出的方块的新方块状态ID。 |
+
+#### Boss栏 Boss Bar
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|----------|------|--------|----------|----------|------|
+| `0x09`<br/>`boss_event` | 游戏 Play | 客户端 Client | UUID | UUID | 此栏的唯一ID Unique ID for this bar。 |
+| `0x09`<br/>`boss_event` | 游戏 Play | 客户端 Client | 动作 Action | VarInt枚举 VarInt Enum | 确定剩余数据包的布局。 |
 
 ---
 
@@ -708,8 +837,14 @@ Minecraft服务器接受来自TCP客户端的连接，并使用数据包与它�
   - 捆绑分隔符 Bundle Delimiter ✅
   - 生成实体 Spawn Entity ✅
   - 实体动画 Entity Animation ✅
-  - 授予统计信息 Award Statistics ✅
+  - 授予统计信息 Award Statistics ✅（完整统计表）
+  - 确认方块更改 Acknowledge Block Change ✅
+  - 设置方块破坏阶段 Set Block Destroy Stage ✅
+  - 方块实体数据 Block Entity Data ✅
+  - 方块动作 Block Action ✅
+  - 方块更新 Block Update ✅
+  - Boss栏 Boss Bar ✅（开始）
 
 **待继续：**
-- 游戏（Play）剩余数据包 - 约8300行
+- 游戏（Play）剩余数据包 - 约8200行
 - 导航（Navigation）
