@@ -1965,3 +1965,127 @@ if (playerDistance < distance) {
 | 海平面变化 Sea level | VarInt | |
 | 数据保持 Data kept | Byte | 位掩码。0x01: 保留属性 Keep attributes, 0x02: 保留元数据 Keep metadata. |
 
+
+#### 选择进度标签页 Select Advancements Tab
+
+由服务器发送以指示客户端应切换进度标签页。在客户端在GUI中切换标签页或在另一个标签页中取得进度时发送。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x4E`<br/>资源 resource: `select_advancements_tab` | 游戏 Play | 客户端 Client | 标识符 Identifier | 前缀可选 Prefixed Optional 标识符 Identifier | 见下文 See below. |
+
+如果没有加载自定义数据包，标识符必须是以下之一：
+
+| 标识符 Identifier |
+|---|
+| minecraft:story/root |
+| minecraft:nether/root |
+| minecraft:end/root |
+| minecraft:adventure/root |
+| minecraft:husbandry/root |
+
+如果发送了无效的标识符或未发送标识符，客户端将切换到GUI中的第一个标签页。
+
+#### 服务器数据 Server Data
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x4F`<br/>资源 resource: `server_data` | 游戏 Play | 客户端 Client | MOTD | 文本组件 Text Component | |
+| | | | 图标 Icon | 前缀可选 Prefixed Optional 前缀数组 Prefixed Array of 字节 Byte | PNG格式的图标字节 Icon bytes in the PNG format. |
+
+#### 设置动作栏文本 Set Action Bar Text
+
+在快捷栏上方显示消息。等同于叠加层设置为true的系统聊天消息，但不执行聊天消息阻止。仅由原版服务器用于实现 `/title` 命令。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x50`<br/>资源 resource: `set_action_bar_text` | 游戏 Play | 客户端 Client | 动作栏文本 Action bar text | 文本组件 Text Component | |
+
+#### 设置边界中心 Set Border Center
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x51`<br/>资源 resource: `set_border_center` | 游戏 Play | 客户端 Client | X | 双精度浮点数 Double | |
+| | | | Z | 双精度浮点数 Double | |
+
+#### 设置边界插值大小 Set Border Lerp Size
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x52`<br/>资源 resource: `set_border_lerp_size` | 游戏 Play | 客户端 Client | 旧直径 Old Diameter | 双精度浮点数 Double | 世界边界单边的当前长度（以米为单位） Current length of a single side of the world border, in meters. |
+| | | | 新直径 New Diameter | 双精度浮点数 Double | 世界边界单边的目标长度（以米为单位） Target length of a single side of the world border, in meters. |
+| | | | 速度 Speed | VarLong | 到达新直径所需的实时毫秒数 Number of real-time milliseconds until New Diameter is reached. 原版服务器似乎不会将世界边界速度同步到游戏刻，因此它会与服务器延迟不同步。如果世界边界没有移动，则设置为0。 |
+
+#### 设置边界大小 Set Border Size
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x53`<br/>资源 resource: `set_border_size` | 游戏 Play | 客户端 Client | 直径 Diameter | 双精度浮点数 Double | 世界边界单边的长度（以米为单位） Length of a single side of the world border, in meters. |
+
+#### 设置边界警告延迟 Set Border Warning Delay
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x54`<br/>资源 resource: `set_border_warning_delay` | 游戏 Play | 客户端 Client | 警告时间 Warning Time | VarInt | 以秒为单位，由 `/worldborder warning time` 设置 In seconds as set by `/worldborder warning time`. |
+
+#### 设置边界警告距离 Set Border Warning Distance
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x55`<br/>资源 resource: `set_border_warning_distance` | 游戏 Play | 客户端 Client | 警告方块数 Warning Blocks | VarInt | 以米为单位 In meters. |
+
+#### 设置摄像机 Set Camera
+
+设置玩家渲染视角所在的实体。通常在玩家在旁观模式下左键单击实体时使用。
+
+玩家的摄像机将随实体移动并查看它所看的方向。该实体通常是另一个玩家，但可以是任何类型的实体。玩家无法移动该实体（移动数据包将被视为来自另一个实体）。
+
+如果给定的实体未被玩家加载，则忽略此数据包。要将控制权返回给玩家，请使用其实体ID发送此数据包。
+
+原版服务器会在旁观的实体被杀死或玩家潜行时重置此设置（将其发送回默认实体），但仅当他们正在旁观实体时才会这样做。它还会在玩家切换出旁观模式时发送此数据包（即使他们没有旁观实体）。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x56`<br/>资源 resource: `set_camera` | 游戏 Play | 客户端 Client | 摄像机ID Camera ID | VarInt | 要将客户端摄像机设置到的实体ID ID of the entity to set the client's camera to. |
+
+原版客户端还会为给定实体加载某些着色器：
+
+- 苦力怕 Creeper → `shaders/post/creeper.json`
+- 蜘蛛 Spider（和洞穴蜘蛛 cave spider）→ `shaders/post/spider.json`
+- 末影人 Enderman → `shaders/post/invert.json`
+- 其他任何东西 → 当前着色器被卸载
+
+#### 设置中心区块 Set Center Chunk
+
+设置客户端区块加载区域的中心位置。该区域为正方形，在两个轴上跨越 2 × 服务器视距 + 7 个区块（宽度，而非半径！）。由于区域的宽度始终为奇数，因此对于哪个区块是中心没有歧义。
+
+原版客户端永远不会渲染或模拟位于加载区域外的区块，但会将它们保留在内存中（除非在仍在范围内时被服务器明确卸载），并且仅当另一个区块以与旧区块坐标模 (2 × 服务器视距 + 7) 全等的坐标加载时才会自动卸载区块。这意味着区块可能在离开并随后通过连续使用此数据包重新进入加载区域后重新出现，除非在此期间被同一"槽位"中的不同区块替换。
+
+原版客户端会忽略尝试加载或卸载位于加载区域外的区块。即使针对仍然加载但当前位于加载区域外的区块的卸载操作也适用（按照上一段）。
+
+原版服务器不依赖于离开加载区域的区块的任何特定行为，自定义客户端无需完全复制上述内容。客户端可以选择立即卸载加载区域外的任何区块，使用不同的模数，或完全忽略加载区域并保持区块加载，无论其位置如何，直到服务器请求卸载它们。以最大互操作性为目标的服务器应始终在区块超出加载区域之前明确卸载任何已加载的区块。
+
+中心区块通常是玩家所在的区块，但除了对区块加载的影响外，（原版）客户端对此不是这种情况不会有问题。实际上，只要区块仅在以世界原点为中心的默认加载区域内发送，就根本不需要发送此数据包。这对于具有小型有界世界的服务器（例如小游戏）可能很有用，因为它确保在客户端加入后永远不需要重新发送区块，从而节省带宽。
+
+每当玩家水平移动穿过区块边界时，原版服务器都会发送此数据包，并且（根据测试）对于垂直轴的任何整数变化也是如此，即使它不跨越区块截面边界。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x57`<br/>资源 resource: `set_chunk_cache_center` | 游戏 Play | 客户端 Client | 区块X Chunk X | VarInt | 加载区域中心的区块X坐标 Chunk X coordinate of the loading area center. |
+| | | | 区块Z Chunk Z | VarInt | 加载区域中心的区块Z坐标 Chunk Z coordinate of the loading area center. |
+
+#### 设置渲染距离 Set Render Distance
+
+在更改渲染距离时由集成的单人服务器发送。当客户端离开末地后重新出现在主世界时，服务器会发送此数据包。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x58`<br/>资源 resource: `set_chunk_cache_radius` | 游戏 Play | 客户端 Client | 视距 View Distance | VarInt | 渲染距离 (2-32) Render distance (2-32). |
+
+#### 设置光标物品 Set Cursor Item
+
+替换或设置用鼠标拖动的物品栏物品。
+
+| 数据包ID Packet ID | 状态 State | 绑定到 Bound To | 字段名称 Field Name | 字段类型 Field Type | 说明 Notes |
+|---|---|---|---|---|---|
+| 协议 protocol: `0x59`<br/>资源 resource: `set_cursor_item` | 游戏 Play | 客户端 Client | 槽位数据 Slot Data | 槽位 Slot | |
